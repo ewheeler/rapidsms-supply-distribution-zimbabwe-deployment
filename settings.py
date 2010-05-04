@@ -13,4 +13,27 @@ DATABASE_ENGINE = "sqlite3"
 DATABASE_NAME = "db.sqlite3"
 
 INSTALLED_APPS = (
-    "rapidsms")
+    "django.contrib.sessions",
+    "django.contrib.contenttypes",
+    "django.contrib.auth",
+
+    "rapidsms",
+    "rapidsms.contrib.ajax", 
+    "rapidsms.contrib.httptester", 
+    "rapidsms.contrib.handlers", 
+    "rapidsms.contrib.locations",
+
+    # enable the django admin using a little shim app (which includes
+    # the required urlpatterns)
+    "rapidsms.contrib.djangoadmin",
+    "django.contrib.admin",
+    
+    "apps.edusupply",
+    "apps.logistics",
+    
+    "rapidsms.contrib.default",
+)
+
+INSTALLED_BACKENDS = {
+    "message_tester" : {"ENGINE": "rapidsms.backends.bucket" } 
+}
