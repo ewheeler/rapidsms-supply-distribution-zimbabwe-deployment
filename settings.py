@@ -9,8 +9,11 @@ from rapidsms.djangoproject.settings import *
 
 # then add your django settings:
 
-DATABASE_ENGINE = "sqlite3"
-DATABASE_NAME = "db.sqlite3"
+DATABASE_ENGINE = "mysql"
+DATABASE_NAME = "dev"
+DATABASE_USER = "unicef"
+DATABASE_PASSWORD = "m3p3m3p3"
+DATABASE_HOST = "localhost"
 
 INSTALLED_APPS = (
     "django.contrib.sessions",
@@ -28,8 +31,8 @@ INSTALLED_APPS = (
     "rapidsms.contrib.djangoadmin",
     "django.contrib.admin",
     
-    "apps.edusupply",
-    "apps.logistics",
+    "edusupply",
+    "logistics",
     
     "rapidsms.contrib.default",
 )
