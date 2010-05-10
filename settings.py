@@ -35,5 +35,17 @@ INSTALLED_APPS = (
 )
 
 INSTALLED_BACKENDS = {
+    #"AT&T": {
+    #    "ENGINE": "rapidsms.backends.gsm",
+    #    "PORT": "/dev/ttyUSB0"
+    #},
+    #"Verizon": {
+    #    "ENGINE": "rapidsms.backends.gsm,
+    #    "PORT": "/dev/ttyUSB1"
+    #},
     "message_tester" : {"ENGINE": "rapidsms.backends.bucket" } 
 }
+
+# after login, django redirects to this URL
+# rather than the default 'accounts/profile'
+LOGIN_REDIRECT_URL='/'
