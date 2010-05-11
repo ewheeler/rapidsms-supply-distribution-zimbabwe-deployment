@@ -5,8 +5,16 @@ from django.db import models
 from rapidsms.contrib.locations.models import Location
 
 class Headmaster(models.Model):
+    phone = models.CharField(max_length=160, blank=True, null=True)
     alternate_phone = models.CharField(max_length=160, blank=True, null=True)
     school = models.ForeignKey(Location, blank=True, null=True, related_name='headmasters')
+
+    class Meta:
+        abstract = True
+
+class DEO(models.Model):
+    phone = models.CharField(max_length=160, blank=True, null=True)
+    district = models.ForeignKey(Location, blank=True, null=True, related_name='headmasters')
 
     class Meta:
         abstract = True
