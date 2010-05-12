@@ -6,22 +6,26 @@ import codecs
 import csv
 import datetime
 import re
-from decimal import Decimal as D
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.management import setup_environ
 
-try:
-    import settings
-    setup_environ(settings)
-except:
-    sys.exit("No settings found")
+from decimal import Decimal as D
+import decimaldegrees as dd
+
+#try:
+#    import settings
+#    setup_environ(settings)
+#except:
+#    sys.exit("No settings found")
 
 
 from rapidsms.models import Contact
 from rapidsms.contrib.locations.models import Location
 from rapidsms.contrib.locations.models import LocationType
 from rapidsms.contrib.locations.models import Point
+from logistics.models import Commodity
+from logistics.models import Cargo
 
 def import_csv(args):
 
@@ -39,19 +43,23 @@ def import_csv(args):
     reader = csv.DictReader(csvee, dialect=dialect, delimiter=",",\
         quoting=csv.QUOTE_ALL, doublequote=True)
 
-    countries = LocationType.objects.create(singular="Country", plural="Countries",\
-        slug="countries")
-    country, c_created = Location.objects.get_or_create(name="Zimbabwe",\
-        type_id=countries.pk)
+    try:
+        countries, c_created = LocationType.objects.get_or_create(singular="Country", plural="Countries",\
+            slug="countries")
+        country, c_created = Location.objects.get_or_create(name="Zimbabwe",\
+            type=countries)
 
-    provinces = LocationType.objects.create(singular="Province",\
-        plural="Provinces", slug="provinces", exist_in=country.pk)
+        provinces, p_created = LocationType.objects.get_or_create(singular="Province",\
+            plural="Provinces", slug="provinces", exists_in=country)
 
-    #TODO calculate per-pallet weight
-    commodity = Commodity(name="Textbooks", slug="textbooks", unit="PL")
+        #TODO calculate per-pallet weight
+        commodity, c_created = Commodity.objects.get_or_create(name="Textbooks", slug="textbooks", unit="PL")
 
-    satellite_counter = 0
-    school_counter = 0
+        satellite_counter = 0
+        school_counter = 0
+    except Exception, e:
+        print 'BANG initial objects'
+        print e
 
     try:
         print 'begin rows'
@@ -69,29 +77,29 @@ def import_csv(args):
                 else:
                     return True
 
-            def clean_phone(raw_phone):
-                if raw_phone in ['NIL']:
-                    return None
-                else:
-                    cleaned = re.sub("[^0-9]", "", raw_phone) 
+            def only_digits(raw_str):
+                cleaned = re.sub("[^0-9]", "", raw_str) 
+                if cleaned != "":
                     return cleaned
+                else:
+                    return None
 
             if has_datum(row, 'ProvName'):
                 province, created = Location.objects.get_or_create(\
-                    name=row['ProvName'], type_id=provinces.pk)
+                    name=row['ProvName'], type=provinces)
 
                 if has_data(row, ['DistName', 'DistCode']):
                     districts, created = LocationType.objects.get_or_create(\
                         singular='District', plural='Districts',\
-                        slug='districts', exists_in=province.pk)
-                    district = Location.objects.create(name=row['DistName',\
-                        type_id=districts.pk, code=row['DistCode'])
+                        slug='districts', exists_in=province)
+                    district, created = Location.objects.get_or_create(name=row['DistName'],\
+                        type=districts, code=row['DistCode'])
 
                     if has_data(row, ['deo', 'phone_number']):
                         try:
-                            clean_phone_number = clean_phone(row['phone_number'])
-                            deo = Contact.objects.create(name=row['deo'],\
-                                    phone=clean_phone_number, district=district.pk)
+                            clean_phone_number = only_digits(row['phone_number'])
+                            deo, created = Contact.objects.get_or_create(name=row['deo'],\
+                                    phone=clean_phone_number, location=district)
 
                         except Exception, e:
                             print 'BANG deo:'
@@ -99,12 +107,19 @@ def import_csv(args):
                             print row
                             continue
 
+                        def clean_and_convert_dm(raw_str):
+                            # split degree and minute.decimal, remove minute mark (')
+                            clean_dm = [x.strip('\'') for x in raw_str.split()]
+                            # convert degree minute.decimal to degree.decimal
+                            clean_dd = dd.dm2decimal(*clean_dm)
+                            return clean_dd 
 
                         if has_data(row, ['GPS_south', 'GPS_east']):
-                            #TODO strip degree symbol?
+                            clean_GPS_south = clean_and_convert_dm(row['GPS_south'])
+                            clean_GPS_east = clean_and_convert_dm(row['GPS_east'])
                             try:
-                                point = Point.objects.create(latitude=row['GPS_south'],\
-                                            longitude=row['GPS_east'])
+                                point, created = Point.objects.get_or_create(latitude=clean_GPS_south,\
+                                            longitude=clean_GPS_east)
 
                             except Exception, e:
                                 print 'BANG point:'
@@ -114,16 +129,17 @@ def import_csv(args):
 
                         else:
                             point = None
-                            try:
-                                schools, created = LocationType.objects.get_or_create(\
-                                    singular='School', plural='Schools',\
-                                    slug='schools', exists_in=district.pk)
 
-                            except Exception, e:
-                                print 'BANG schools:'
-                                print e
-                                print row
-                                continue
+                        try:
+                            schools, created = LocationType.objects.get_or_create(\
+                                singular='School', plural='Schools',\
+                                slug='schools', exists_in=district)
+
+                        except Exception, e:
+                            print 'BANG schools:'
+                            print e
+                            print row
+                            continue
 
                         if has_data(row, ['school_name', 'school_address', 'school_code', 'km_to_DEO', 'SchoolType']):
                             school_type = row['SchoolType']
@@ -150,13 +166,13 @@ def import_csv(args):
                             else:
                                 satellite_code = None
 
-                            #TODO clean N/As from km_to_DEO
+                            clean_km_to_DEO = only_digits(row['km_to_DEO'])
 
                             try:
-                                school = Location.objects.create(name=row['school_name'],\
+                                school, created = Location.objects.get_or_create(name=row['school_name'],\
                                     address=row['school_address'], code=row['school_code'],\
-                                    km_to_DEO=row['km_to_DEO'], type_id=schools.pk,\
-                                    satellite_number=satellite_code)
+                                    km_to_DEO=clean_km_to_DEO, type=schools,\
+                                    satellite_number=satellite_code, point=point)
                                 school_counter += 1
 
                             except Exception, e:
@@ -168,11 +184,11 @@ def import_csv(args):
 
                             if has_data(row, ['contact_name', 'phone', 'alternate_phone']): 
                                 try:
-                                    clean_number = clean_phone(row['phone'])
-                                    clean_alt_number = clean_phone(row['alternate_phone'])
-                                    headmaster = Contact.objects.create(name=row['contact_name'],\
+                                    clean_number = only_digits(row['phone'])
+                                    clean_alt_number = only_digits(row['alternate_phone'])
+                                    headmaster, created = Contact.objects.get_or_create(name=row['contact_name'],\
                                         phone=clean_number, alternate_phone=clean_alt_number,\
-                                        school=school.pk)
+                                        location=school)
 
                                 except Exception, e:
                                     print 'BANG headmaster:'
