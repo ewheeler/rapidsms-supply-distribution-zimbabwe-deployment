@@ -7,6 +7,8 @@ from rapidsms.contrib.locations.models import Location
 class HeadmasterOrDEO(models.Model):
     phone = models.CharField(max_length=160, blank=True, null=True)
     alternate_phone = models.CharField(max_length=160, blank=True, null=True)
+    #TODO add many-to-many field for assigned location
+    # and update import script accordingly
 
     def __unicode__(self):
         if self.location is not None:
