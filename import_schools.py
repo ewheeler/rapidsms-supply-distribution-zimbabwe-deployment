@@ -9,6 +9,7 @@ import re
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.management import setup_environ
+from django.template.defaultfilters import slugify
 
 from decimal import Decimal as D
 import decimaldegrees as dd
@@ -47,7 +48,7 @@ def import_csv(args):
         countries, c_created = LocationType.objects.get_or_create(singular="Country", plural="Countries",\
             slug="countries")
         country, c_created = Location.objects.get_or_create(name="Zimbabwe",\
-            type=countries)
+            type=countries, slug=slugify("Zimbabwe"))
 
         provinces, p_created = LocationType.objects.get_or_create(singular="Province",\
             plural="Provinces", slug="provinces", exists_in=country)
@@ -86,14 +87,14 @@ def import_csv(args):
 
             if has_datum(row, 'ProvName'):
                 province, created = Location.objects.get_or_create(\
-                    name=row['ProvName'], type=provinces)
+                    name=row['ProvName'], type=provinces, slug=slugify(row['ProvName']))
 
                 if has_data(row, ['DistName', 'DistCode']):
                     districts, created = LocationType.objects.get_or_create(\
                         singular='District', plural='Districts',\
                         slug='districts', exists_in=province)
                     district, created = Location.objects.get_or_create(name=row['DistName'],\
-                        type=districts, code=row['DistCode'])
+                        type=districts, code=row['DistCode'], slug=slugify(row['DistName']))
 
                     if has_data(row, ['deo', 'phone_number']):
                         try:
@@ -171,7 +172,7 @@ def import_csv(args):
                             try:
                                 school, created = Location.objects.get_or_create(name=row['school_name'],\
                                     address=row['school_address'], code=row['school_code'],\
-                                    km_to_DEO=clean_km_to_DEO, type=schools,\
+                                    km_to_DEO=clean_km_to_DEO, type=schools, slug=slugify(row['school_name']),\
                                     satellite_number=satellite_code, point=point)
                                 school_counter += 1
 
