@@ -116,7 +116,11 @@ def import_csv(args):
                             return clean_dd 
 
                         if has_data(row, ['GPS_south', 'GPS_east']):
-                            clean_GPS_south = clean_and_convert_dm(row['GPS_south'])
+                            # latitude coordinates from excel file are 
+                            # all 'south' so degrees should be negative 
+                            clean_GPS_south = clean_and_convert_dm(row['GPS_south']).copy_negate()
+                            # longitude coordinates from excel file are
+                            # all 'east' so degrees should remain positive
                             clean_GPS_east = clean_and_convert_dm(row['GPS_east'])
                             try:
                                 point, created = Point.objects.get_or_create(latitude=clean_GPS_south,\
@@ -142,7 +146,7 @@ def import_csv(args):
                             print row
                             continue
 
-                        if has_data(row, ['school_name', 'school_address', 'school_code', 'km_to_DEO', 'SchoolType']):
+                        if has_data(row, ['school_name', 'SchoolType']):
                             school_type = row['SchoolType']
                             #Actual School Code  + Identifier =    Final School Code
                             # e.g
@@ -169,9 +173,17 @@ def import_csv(args):
 
                             clean_km_to_DEO = only_digits(row['km_to_DEO'])
 
+                            safe_address = row['school_address']
+                            if safe_address in ["NIL", ""]:
+                                safe_address = None
+
+                            safe_code = row['school_code']
+                            if safe_code in ["NIL", ""]:
+                                safe_code = None
+
                             try:
                                 school, created = Location.objects.get_or_create(name=row['school_name'],\
-                                    address=row['school_address'], code=row['school_code'],\
+                                    address=safe_address, code=safe_code,\
                                     km_to_DEO=clean_km_to_DEO, type=schools, slug=slugify(row['school_name']),\
                                     satellite_number=satellite_code, point=point)
                                 school_counter += 1
