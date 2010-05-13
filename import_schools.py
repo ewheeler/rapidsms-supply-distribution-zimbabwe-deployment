@@ -100,7 +100,9 @@ def import_csv(args):
                         try:
                             clean_phone_number = only_digits(row['phone_number'])
                             deo, created = Contact.objects.get_or_create(name=row['deo'],\
-                                    phone=clean_phone_number, location=district)
+                                    phone=clean_phone_number)
+                            deo.facilities.add(district)
+                            deo.save()
 
                         except Exception, e:
                             print 'BANG deo:'
@@ -200,8 +202,10 @@ def import_csv(args):
                                     clean_number = only_digits(row['phone'])
                                     clean_alt_number = only_digits(row['alternate_phone'])
                                     headmaster, created = Contact.objects.get_or_create(name=row['contact_name'],\
-                                        phone=clean_number, alternate_phone=clean_alt_number,\
-                                        location=school)
+                                        phone=clean_number)
+                                    headmaster.alternate_phone = clean_alt_number
+                                    headmaster.facilities.add(school)
+                                    headmaster.save()
 
                                 except Exception, e:
                                     print 'BANG headmaster:'

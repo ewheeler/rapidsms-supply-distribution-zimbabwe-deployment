@@ -7,14 +7,13 @@ from rapidsms.contrib.locations.models import Location
 class HeadmasterOrDEO(models.Model):
     phone = models.CharField(max_length=160, blank=True, null=True)
     alternate_phone = models.CharField(max_length=160, blank=True, null=True)
-    #TODO add many-to-many field for assigned location
-    # and update import script accordingly
+    facilities = models.ManyToManyField(Location, related_name='facilitycontact', blank=True, null=True)
 
-    def __unicode__(self):
-        if self.location is not None:
-            return self.name + ' (' + self.location.slug + ' ' + self.location.type.singular + ')'
-        else:
-            return self.name or self.alias or "Anonymous"
+#    def __unicode__(self):
+#        if self.facilities is not None:
+#            return self.name + ' (' + ','.join(x.name for x in list(self.facilities)) + ')'
+#        else:
+#            return self.name or self.alias or "Anonymous"
 
     class Meta:
         abstract = True
