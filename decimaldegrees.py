@@ -50,42 +50,45 @@ from decimal import Decimal as D
 def decimal2dms(decimal_degrees):
     """ Converts a floating point number of degrees to the equivalent
     number of degrees, minutes, and seconds, which are returned
-    as a 3-element list. If 'decimal_degrees' is negative,
-    only degrees (1st element of returned list) will be negative,
+    as a 3-element tuple of decimals. If 'decimal_degrees' is negative,
+    only degrees (1st element of returned tuple) will be negative,
     minutes (2nd element) and seconds (3rd element) will always be positive.
 
     Example:
     >>> decimal2dms(121.135)
-    [121, 8, 6.0000000000184173]
+    (Decimal('121'), Decimal('8'), Decimal('6.000'))
     >>> decimal2dms(-121.135)
-    [-121, 8, 6.0000000000184173]
+    (Decimal('-121'), Decimal('8'), Decimal('6.000'))
     
     """
 
-    degrees = int(decimal_degrees)
-    decimal_minutes = abs(decimal_degrees - degrees) * 60
-    minutes = int(decimal_minutes)
-    seconds = (decimal_minutes - minutes) * 60
-    return [degrees, minutes, seconds]
+    degrees = D(int(decimal_degrees))
+    decimal_minutes = libdecimal.getcontext().multiply(\
+        (D(str(decimal_degrees)) - degrees).copy_abs(), D(60))
+    minutes = D(int(decimal_minutes))
+    seconds = libdecimal.getcontext().multiply(\
+        (decimal_minutes - minutes), D(60))
+    return (degrees, minutes, seconds)
 
 
 def decimal2dm(decimal_degrees):
     """ Converts a floating point number of degrees to the equivalent
-    number of degrees and minutes, which are returned as a 2-element list.
-    If 'decimal_degrees' is negative, only degrees (1st element of returned list)
+    number of degrees and minutes, which are returned as a 2-element tuple of decimals.
+    If 'decimal_degrees' is negative, only degrees (1st element of returned tuple)
     will be negative, minutes (2nd element) will always be positive.
 
     Example:
     >>> decimal2dm(121.135)
-    [121, 8.100000000000307]
+    (Decimal('121'), Decimal('8.100'))
     >>> decimal2dm(-121.135)
-    [-121, 8.100000000000307]
+    (Decimal('-121'), Decimal('8.100'))
     
     """
 
-    degrees = int(decimal_degrees) 
-    minutes = abs(decimal_degrees - degrees) * 60
-    return [degrees, minutes]
+    degrees = D(int(decimal_degrees))
+    minutes = libdecimal.getcontext().multiply(\
+        (D(str(decimal_degrees)) - degrees).copy_abs(), D(60))
+    return (degrees, minutes)
 
 
 def dms2decimal(degrees, minutes, seconds):
@@ -97,24 +100,22 @@ def dms2decimal(degrees, minutes, seconds):
     
     Example:
     >>> dms2decimal(121, 8, 6)
-    121.13500000000001
+    Decimal('121.135')
     >>> dms2decimal(-121, 8, 6)
-    -121.13500000000001
+    Decimal('-121.135')
     
     """
     
     decimal = D(0)
-    deg = D(degrees)
-    min = libdecimal.getcontext().divide(D(minutes), D(60))
-    sec = libdecimal.getcontext().divide(D(seconds), D(3600))
+    deg = D(str(degrees))
+    min = libdecimal.getcontext().divide(D(str(minutes)), D(60))
+    sec = libdecimal.getcontext().divide(D(str(seconds)), D(3600))
     if (degrees >= D(0)):
-        #decimal = degrees + float(minutes)/60 + float(seconds)/3600
         decimal = deg + min + sec
     else:
-        #decimal = degrees - float(minutes)/60 - float(seconds)/3600
         decimal = deg - min - sec
         
-    return decimal
+    return libdecimal.getcontext().normalize(decimal)
 
 
 def dm2decimal(degrees, minutes):
@@ -124,9 +125,9 @@ def dm2decimal(degrees, minutes):
     
     Example:
     >>> dm2decimal(121, 8.1)
-    121.13500000000001
+    Decimal('121.135')
     >>> dm2decimal(-121, 8.1)
-    -121.13500000000001
+    Decimal('-121.135')
     
     """
     return dms2decimal(degrees, minutes, 0)
