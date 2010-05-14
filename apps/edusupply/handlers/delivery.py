@@ -6,7 +6,7 @@ from django.db.models import Max
 
 from rapidsms.contrib.handlers import KeywordHandler
 from rapidsms.models import Contact
-from logistics import Commodity
+from logistics.models import Commodity
 
 
 class DeliveryHandler(KeywordHandler):
@@ -36,7 +36,11 @@ class DeliveryHandler(KeywordHandler):
         #                          condition code
 
         # declare variables intended for valid information 
-        known_person, commodity, facility, quantity, condition = None
+        known_person = None
+        commodity = None
+        facility = None
+        quantity = None
+        condition = None
 
         if self.msg.connection.identity is not None:
             try:
@@ -75,7 +79,7 @@ class DeliveryHandler(KeywordHandler):
 
                     except ObjectDoesNotExist:
                         self.respond("Sorry no record of supply called '%s'" % tokens['commodity'])
-                        self.respond("Approved supplies are %s" % ", ".join(Commodity.objects.values_list('slug', flat=True))
+                        self.respond("Approved supplies are %s" % ", ".join(Commodity.objects.values_list('slug', flat=True)))
 
                 if tokens['school_code'].isdigit():
 
@@ -132,7 +136,7 @@ class DeliveryHandler(KeywordHandler):
                     #    if int(tokens['condition']) in range(1,4):
                     if tokens['quantity'].isdigit():
                         if tokens['condition'].isdigit():
-                            conditions_map = {'1':'G', '2':'D', '3','L'}
+                            conditions_map = {'1':'G', '2':'D', '3':'L'}
 
                             if facility is not None:
                                 active_shipment = Shipment.objects.filter(\
@@ -140,7 +144,7 @@ class DeliveryHandler(KeywordHandler):
                                 if active_shipment:
                                     observed_cargo = Cargo.objects.create(\
                                        commodity=commodity,\
-                                       quantity=int(tokens['quantity'])\
+                                       quantity=int(tokens['quantity']),\
                                        condition=conditions_map[tokens['condition']])
 
                                     sighting = ShipmentSighting.objects.create(\
