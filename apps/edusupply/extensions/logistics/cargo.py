@@ -9,7 +9,7 @@ class CargoWithCondition(models.Model):
         ('D', 'Damaged'),
         ('L', 'Alternate delivery location'),
     )
-    condition = models.CharField(max_length=3, choices=CONDITION_CHOICES)
+    condition = models.CharField(max_length=3, choices=CONDITION_CHOICES, blank=True, null=True)
     
     class Meta:
         abstract = True
