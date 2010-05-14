@@ -27,6 +27,7 @@ from rapidsms.contrib.locations.models import LocationType
 from rapidsms.contrib.locations.models import Point
 from logistics.models import Commodity
 from logistics.models import Cargo
+from logistics.models import Shipment
 
 def import_csv(args):
 
@@ -213,13 +214,25 @@ def import_csv(args):
                                     print row
                                     continue
 
-                            if has_data(row, ['number_of_pallets', 'total_weight_of_pallets']):
+                            if has_data(row, ['number_of_pallets']):
                                 try:
                                     cargo = Cargo.objects.create(commodity=commodity,\
                                                 quantity=row['number_of_pallets'])
 
                                 except Exception, e:
                                     print 'BANG cargo:'
+                                    print e
+                                    print row
+                                    continue
+
+                                try:
+                                    shipment = Shipment.objects.create(status='P',\
+                                       origin=country,\
+                                       destination=school)
+                                    shipment.cargos.add(cargo)
+
+                                except Exception, e:
+                                    print 'BANG shipment:'
                                     print e
                                     print row
                                     continue
