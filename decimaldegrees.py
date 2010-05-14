@@ -3,6 +3,7 @@
 PyDecimalDegrees - geographic coordinates conversion utility.
 
 Copyright (C) 2006 by Mateusz Łoskot <mateusz@loskot.net>
+Altered in 2010 by Evan Wheeler <ewheeler@unicef.org>
 
 This file is part of PyDecimalDegrees module.
 
