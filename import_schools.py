@@ -55,7 +55,8 @@ def import_csv(args):
             plural="Provinces", slug="provinces", exists_in=country)
 
         #TODO calculate per-pallet weight
-        commodity, c_created = Commodity.objects.get_or_create(name="Textbooks", slug="textbooks", unit="PL")
+        commodity, c_created = Commodity.objects.get_or_create(name="Textbooks",\
+            slug="textbooks", unit="PL", aliases="textbook,books,book")
 
         satellite_counter = 0
         school_counter = 0
