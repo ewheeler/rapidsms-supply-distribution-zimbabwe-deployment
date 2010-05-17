@@ -7,6 +7,7 @@ from django.db.models import Max
 from rapidsms.contrib.handlers import KeywordHandler
 from rapidsms.contrib.locations.models import Location
 from rapidsms.models import Contact
+
 from logistics.models import Commodity
 from logistics.models import Cargo
 from logistics.models import Shipment
@@ -61,12 +62,13 @@ class DeliveryHandler(KeywordHandler):
                     known_contact = Contact.objects.get(alternate_phone=\
                         self.msg.connection.identity)
                 except MultipleObjectsReturned:
-                    #TODO do something if this occurs?
+                    #TODO this case may be unneccesary, since many many contacts
+                    # often share a single alternate_phone
                     self.debug('MULTIPLE IDENTITIES AFTER UNKNOWN')
                     pass
                 except ObjectDoesNotExist:
                     #TODO handler for this response
-                    self.respond("Sorry I don't recognize your phone number. Please respond with your surname and facility name.")
+                    self.respond("Sorry, I don't recognize your phone number. Please respond with your surname, facility (school or DEO) name, and facility code.")
         else:
             self.debug('NO IDENTITY')
 
@@ -85,16 +87,31 @@ class DeliveryHandler(KeywordHandler):
             else:
                 tokens = dict(zip(token_labels, token_data))
                 if not tokens['commodity'].isdigit():
-                    try:
-                        commodity = Commodity.objects.get(slug__istartswith=tokens['commodity'])
+                    def get_commodity(token):
+                        try:
+                            # lookup commodity by slug
+                            com = Commodity.objects.get(slug__istartswith=tokens['commodity'])
+                        except MultipleObjectsReturned:
+                            #TODO do something here?
+                            pass
+                        except ObjectDoesNotExist:
+                            coms = Commodity.objects.all()
+                            for com in coms:
+                                # iterate all commodities and see if submitted
+                                # token is in an aliases list
+                                match = com.has_alias(token)
+                                if match is not None:
+                                    if match:
+                                        return com
+                                continue
+                            return None
 
-                    except MultipleObjectsReturned:
-                        #TODO do something here?
-                        pass
+                    commodity = get_commodity(tokens['commodity'])
 
-                    except ObjectDoesNotExist:
-                        self.respond("Sorry no record of supply called '%s'" % tokens['commodity'])
+                    if commodity is None:
+                        self.respond("Sorry %s, no record of supply called '%s'" % (known_contact.name, tokens['commodity']))
                         self.respond("Approved supplies are %s" % ", ".join(Commodity.objects.values_list('slug', flat=True)))
+
 
                 if tokens['school_code'].isdigit():
 
@@ -129,7 +146,7 @@ class DeliveryHandler(KeywordHandler):
                                 satellite_number=sat_num)
 
                         except ObjectDoesNotExist:
-                            self.respond("Sorry no record of school with code %s" % (tokens['school_code']))
+                            self.respond("Sorry %s, no record of school with code '%s'" % (known_contact.name, tokens['school_code']))
 
                             # maybe satellite number is omitted, so lookup schools by entire token
                             suggestions = list_possible_schools_for_code(tokens['school_code'])
@@ -143,6 +160,7 @@ class DeliveryHandler(KeywordHandler):
                                 self.respond("Did you mean one of: %s?" %\
                                     (", ".join(suggestions)))
 
+
                     else:
                         self.respond("Sorry code '%s' is not valid. All codes are fewer than 6 digits" % (tokens['school_code']))
 
@@ -151,10 +169,11 @@ class DeliveryHandler(KeywordHandler):
                     #    if int(tokens['condition']) in range(1,4):
                     if tokens['quantity'].isdigit():
                         if tokens['condition'].isdigit():
+                            # map expected condition tokens into choices for db
                             conditions_map = {'1':'G', '2':'D', '3':'L'}
 
                             def get_active_shipment(dest):
-                                # returns a single Shipment
+                                # returns a single Shipment (not a queryset)
                                 active_shipment = Shipment.objects.filter(\
                                     destination=facility).exclude(status='D')
                                 if active_shipment.count() > 1:
@@ -164,27 +183,32 @@ class DeliveryHandler(KeywordHandler):
                                     return active_shipment[0]
                                 if active_shipment.count() == 0:
                                     active_shipment = Shipment.objects.create(\
-                                        destination=facility, origin=country,\
-                                        status='T')
+                                        destination=facility, status='T')
                                     return active_shipment
 
                             if facility is not None:
                                 active_shipment = get_active_shipment(facility)
 
                                 if active_shipment is not None:
+                                    # create a new Cargo object
                                     observed_cargo = Cargo.objects.create(\
                                        commodity=commodity,\
                                        quantity=int(tokens['quantity']),\
                                        condition=conditions_map[tokens['condition']])
 
+                                    # create a new ShipmentSighting
                                     sighting = ShipmentSighting.objects.create(\
                                         observed_cargo=observed_cargo,\
                                         seen_by=known_contact,\
                                         location=facility)
 
+                                    # associate new Cargo with Shipment
                                     active_shipment.status = 'D'
+                                    active_shipment.cargos.add(observed_cargo)
                                     active_shipment.save()
 
+                                    # get or create a ShipmentRoute and associate
+                                    # with new ShipmentSighting
                                     route, new_route = ShipmentRoute.objects.get_or_create(\
                                         shipment=active_shipment)
                                     route.sightings.add(sighting)
