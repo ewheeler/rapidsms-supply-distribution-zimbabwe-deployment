@@ -5,8 +5,13 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.models import Max
 
 from rapidsms.contrib.handlers import KeywordHandler
+from rapidsms.contrib.locations.models import Location
 from rapidsms.models import Contact
 from logistics.models import Commodity
+from logistics.models import Cargo
+from logistics.models import Shipment
+from logistics.models import ShipmentSighting
+from logistics.models import ShipmentRoute
 
 
 class DeliveryHandler(KeywordHandler):
@@ -36,32 +41,42 @@ class DeliveryHandler(KeywordHandler):
         #                          condition code
 
         # declare variables intended for valid information 
-        known_person = None
+        known_contact = None
         commodity = None
         facility = None
         quantity = None
         condition = None
+        observed_cargo = None
 
         if self.msg.connection.identity is not None:
             try:
-                known_person = Contact.objects.get(phone=self.msg.connection.identity)
+                known_contact = Contact.objects.get(phone=self.msg.connection.identity)
             except MultipleObjectsReturned:
                 #TODO do something?
+                self.debug('MULTIPLE IDENTITIES')
                 pass
             except ObjectDoesNotExist:
+                self.debug('NO PERSON FOUND')
                 try:
-                    known_person  = Contact.objects.get(alternate_phone=\
+                    known_contact = Contact.objects.get(alternate_phone=\
                         self.msg.connection.identity)
                 except MultipleObjectsReturned:
                     #TODO do something if this occurs?
+                    self.debug('MULTIPLE IDENTITIES AFTER UNKNOWN')
                     pass
                 except ObjectDoesNotExist:
                     #TODO handler for this response
                     self.respond("Sorry I don't recognize your phone number. Please respond with your surname and facility name.")
+        else:
+            self.debug('NO IDENTITY')
 
-        if known_person is not None:
+        if known_contact is not None:
+            self.debug('KNOWN PERSON')
+
             token_labels = ['commodity', 'school_code', 'quantity', 'condition']
             token_data = text.split()
+
+            self.debug(token_data)
 
             if len(token_data) > 4:
                 self.respond('Too many data!')
@@ -105,7 +120,7 @@ class DeliveryHandler(KeywordHandler):
                     max_code_length = len(str(max_codes['max_code']))
                     max_sat_length = len(str(max_codes['max_sat']))
 
-                    if len(tokens['school_code']) <= (max_code_lenth + max_sat_length):
+                    if len(tokens['school_code']) <= (max_code_length + max_sat_length):
                         # separate school's code and satellite_number (last digit)
                         school_num = tokens['school_code'][:-1]
                         sat_num = tokens['school_code'][-1:]
@@ -138,10 +153,25 @@ class DeliveryHandler(KeywordHandler):
                         if tokens['condition'].isdigit():
                             conditions_map = {'1':'G', '2':'D', '3':'L'}
 
-                            if facility is not None:
+                            def get_active_shipment(dest):
+                                # returns a single Shipment
                                 active_shipment = Shipment.objects.filter(\
                                     destination=facility).exclude(status='D')
-                                if active_shipment:
+                                if active_shipment.count() > 1:
+                                    self.debug('MANY POSSIBLE SHIPMENTS')
+                                    return None
+                                if active_shipment.count() == 1:
+                                    return active_shipment[0]
+                                if active_shipment.count() == 0:
+                                    active_shipment = Shipment.objects.create(\
+                                        destination=facility, origin=country,\
+                                        status='T')
+                                    return active_shipment
+
+                            if facility is not None:
+                                active_shipment = get_active_shipment(facility)
+
+                                if active_shipment is not None:
                                     observed_cargo = Cargo.objects.create(\
                                        commodity=commodity,\
                                        quantity=int(tokens['quantity']),\
@@ -150,10 +180,12 @@ class DeliveryHandler(KeywordHandler):
                                     sighting = ShipmentSighting.objects.create(\
                                         observed_cargo=observed_cargo,\
                                         seen_by=known_contact,\
-                                        shipment=active_shipment,\
                                         location=facility)
 
-                                    route = ShipmentRoute.objects.get_or_create(\
+                                    active_shipment.status = 'D'
+                                    active_shipment.save()
+
+                                    route, new_route = ShipmentRoute.objects.get_or_create(\
                                         shipment=active_shipment)
                                     route.sightings.add(sighting)
                                     route.save()
@@ -161,8 +193,8 @@ class DeliveryHandler(KeywordHandler):
                                 data = [
                                         "%s pallets"        % (observed_cargo.quantity or "??"),
                                         "of %s"             % (commodity.slug or "??"),
-                                        "at %s"             % (facility.name or "??"),
-                                        "in %s condition"   % (observed_cargo.get_condition_display or "??")
+                                        "to %s"             % (facility.name or "??"),
+                                        "in %s condition"   % (observed_cargo.get_condition_display() or "??")
                                 ]
                                 confirmation = "Thanks %s. Confirmed delivery of %s." %\
                                     (known_contact.name, " ".join(data))
@@ -170,4 +202,4 @@ class DeliveryHandler(KeywordHandler):
                                 self.respond(confirmation)
 
 
-        self.respond("WORD UP!")
+        #self.respond("WORD UP!")
