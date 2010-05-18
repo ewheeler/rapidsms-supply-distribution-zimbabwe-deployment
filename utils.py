@@ -12,16 +12,33 @@ from jarow import jarow
 # http://mwh.geek.nz/2009/04/26/python-damerau-levenshtein-distance/
 from dameraulevenshtein import dameraulevenshtein
 
-def calc_dists(db_str, search_str):
+def calc_dists(my_str, search_str):
+    ''' Calculates Levenshtein distance, Damerau-Levenshtein distance,
+        and Jaro-Winkler distance between two strings.
+
+        Returns a 3-item tuple containing results, respectively.
+    '''
     # find levenshtein distance
-    lev = distance(db_str, search_str)
+    lev = distance(my_str, search_str)
     # find damerau-levenshtein distance
-    dl = dameraulevenshtein(db_str, search_str)
+    dl = dameraulevenshtein(my_str, search_str)
     # find jaro-winkler distance
-    jw = jarow(db_str, search_str)
+    jw = jarow(my_str, search_str)
     return (lev, dl, jw)
 
 def closest_matches(d, n=100):
+    ''' Expects a list of tuples (d) conisisting of:
+        (
+            'search string used for distance calculations',
+            object whose field is being compared to search string,
+            levenshtein distance,
+            damerau-levenshtein distance,
+            jaro-winkler distance
+        )
+
+        Returns a subset of this list (in the same format)
+        containing the closest matches.
+    '''
     top_by_lev = None
     top_by_dl = None
 
@@ -56,4 +73,12 @@ def closest_matches(d, n=100):
         dl_lev = filter(lambda x:x in below_dl_avg, below_lev_avg)
 
         # intersect with list of items with best jw distances
-        return filter(lambda x:x in above_75_jaro, dl_lev)
+        best_matches = filter(lambda x:x in above_75_jaro, dl_lev)
+
+        # see if we have any perfect matches
+        perfect_matches = [x for x in best_matches if (x[2]==0 and x[3]==0 and x[4]==1.0)]
+
+        if len(perfect_matches) > 0:
+            return perfect_matches
+        else:
+            return best_matches

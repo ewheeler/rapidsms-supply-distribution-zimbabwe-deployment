@@ -20,6 +20,8 @@ class HeadmasterOrDEO(models.Model):
 
         for obj in klass.objects.all():
             args = [str(obj.name).upper(), search_string.upper()]
+            # also calculate distance between search_string and 
+            # the best guess of a surname (longest word in name)
             alt_args = [max(str(obj.name).replace('.', ' ').split()).upper(), search_string.upper()]
 
             args_dists = utils.calc_dists(*args)
