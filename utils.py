@@ -12,12 +12,14 @@ from jarow import jarow
 # http://mwh.geek.nz/2009/04/26/python-damerau-levenshtein-distance/
 from dameraulevenshtein import dameraulevenshtein
 
-def calc_dists(my_str, search_str):
+def calc_dists(mine, theirs):
     ''' Calculates Levenshtein distance, Damerau-Levenshtein distance,
         and Jaro-Winkler distance between two strings.
 
         Returns a 3-item tuple containing results, respectively.
     '''
+    my_str = unicode(mine)
+    search_str = unicode(theirs)
     # find levenshtein distance
     lev = distance(my_str, search_str)
     # find damerau-levenshtein distance
