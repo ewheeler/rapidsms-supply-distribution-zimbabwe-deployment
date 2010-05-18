@@ -68,7 +68,7 @@ class DeliveryHandler(KeywordHandler):
                     pass
                 except ObjectDoesNotExist:
                     #TODO handler for this response
-                    self.respond("Sorry, I don't recognize your phone number. Please respond with your surname, facility (school or DEO) name, and facility code.")
+                    self.respond("Sorry, I don't recognize your phone number. Please respond with your surname, facility (school or DEO) code, and facility name.")
         else:
             self.debug('NO IDENTITY')
 
