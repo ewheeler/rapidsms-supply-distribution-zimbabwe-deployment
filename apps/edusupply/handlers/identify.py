@@ -53,7 +53,7 @@ class IdentifyHandler(KeywordHandler):
         else:
             self.debug('NO IDENTITY')
         if known_contact is not None:
-            self.respond("Oh i know you!")
+            self.debug('KNOWN CONTACT')
         else:
             token_labels = ['surname', 'facility_code', 'facility_name']
             token_data = text.split()
@@ -62,10 +62,11 @@ class IdentifyHandler(KeywordHandler):
 
             if len(token_data) < len(token_labels):
                 self.debug('NOT ENOUGH TOKENS')
+
             if len(token_data) > len(token_labels):
                 self.debug('TOO MANY TOKENS')
                 # if the third token is digits, condense the first
-                # two tokens into one token
+                # two tokens into a single token
                 if token_data[2].isdigit():
                     self.debug('MERGING SURNAME')
                     surname_tokens = token_data[:2]
@@ -73,10 +74,11 @@ class IdentifyHandler(KeywordHandler):
                     del token_data[:2]
                     token_data.insert(0, surname)
                     self.debug(token_data)
+
                 if len(token_data) > len(token_labels):
                 # if we still have too many tokens, and digits are
                 # in the right place, condense any following tokens
-                # into one token
+                # into a single token
                     if token_data[1].isdigit():
                         self.debug('MERGING FACILITY NAME')
                         fac_name_tokens = token_data[2:] 
