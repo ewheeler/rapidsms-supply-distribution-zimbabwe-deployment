@@ -86,73 +86,27 @@ def closest_matches(d, n=100):
         else:
             return best_matches
 
-def check_tokens(token_labels, token_isdigit_exp, submission):
-    #token_labels = ['surname', 'facility_code', 'facility_name']
-    #token_isdigit_exp = ['False', 'True', 'False']
+def split_into_tokens(expected_tokens, submission):
 
-    #token_data = ['van', 'wheeler', '99', 'unicef', 'house']
-    #token_isdigit_act = ['False', 'False', 'True', 'False', 'False'] 
+    type_tokens_exp = [item for sublist in [x.values() for x in expected_tokens] for item in sublist]
+    tokens_labels = [item for sublist in [x.keys() for x in expected_tokens] for item in sublist]
 
-    if len(token_data) < len(token_labels):
-        print ('NOT ENOUGH TOKENS')
+    #num_tokens_act = [re.sub(' ', '', n) for n in re.findall('\d+\.?\s?\d+?', submission)]
+    num_tokens_act = re.findall('\d+', submission)
+    print num_tokens_act
+    if type_tokens_exp.count(True) != len(num_tokens_act):
+        print 'missing num token'
 
-    def merge_leading():
-        for e, expected in enumerate(token_isdigit_exp):
-            for a, actual in enumerate(token_isdigit_act):
-                if expected is True and actual is False:
-                    if a == e:
-                        continue
-                if expected and actual is False:
-                    if e == a:
-                        break
-                if expected and actual is True:
-                    if a > 0 and e <= a:
-                        print '*** merging leading ***'
-                        leading_tokens = token_data[:a]
-                        new_lead = " ".join(leading_tokens)
-                        del token_data[:a]
-                        token_data.insert(0, new_lead)
-                        print token_data
-                        return
+    word_tokens_act = [w.strip() for w in re.findall('\D+', submission) if w not in ['.', ' ', '']]
+    print word_tokens_act
+    if type_tokens_exp.count(False) != len(word_tokens_act):
+        print 'missing word token'
 
-    def merge_trailing():
-        for e, expected in enumerate(token_isdigit_exp):
-            for a, actual in enumerate(token_isdigit_act):
-                if expected is True and actual is False:
-                    if a == e:
-                        continue
-                if expected and actual is True:
-                    if e == a:
-                        break
-                if expected and actual is False:
-                    next_digit = None
-                    for d, digits in enumerate(token_isdigit_act):
-                        if d > a:
-                            if digits:
-                                next_digit = d
-                                break
-                    if e < a:
-                        print '*** merging trailing ***'
-                        print expected
-                        print actual
-                        print next_digit
-                        trailing_tokens = token_data[a:next_digit]
-                        print trailing_tokens
-                        new_trail = " ".join(trailing_tokens)
-                        print new_trail
-                        del token_data[a:next_digit]
-                        token_data.insert(a, new_trail)
-                        print token_data
-                        break
-                
-    token_data = submission.split()
-    print token_data
-    if len(token_data) > len(token_labels):
-        print ('TOO MANY TOKENS')
-        token_isdigit_act = [t.isdigit() for t in token_data]
-        merge_leading()
-        token_isdigit_act = [t.isdigit() for t in token_data]
-        merge_trailing()
-
-
-    return token_data
+    tokens_data = []
+    for digit in type_tokens_exp:
+        if digit:
+            tokens_data.append(num_tokens_act.pop(0))
+        else:
+            tokens_data.append(word_tokens_act.pop(0))
+    
+    return dict(zip(tokens_labels, tokens_data))
