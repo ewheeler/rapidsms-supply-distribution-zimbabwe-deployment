@@ -44,6 +44,7 @@ class IdentifyHandler(KeywordHandler):
         if self.msg.connection.identity is not None:
             try:
                 known_contact = Contact.objects.get(phone=self.msg.connection.identity)
+                self.debug('KNOWN CONTACT')
             except MultipleObjectsReturned:
                 #TODO do something?
                 self.debug('MULTIPLE IDENTITIES')
@@ -52,42 +53,13 @@ class IdentifyHandler(KeywordHandler):
                 self.debug('NO PERSON FOUND')
         else:
             self.debug('NO IDENTITY')
-        if known_contact is not None:
-            self.debug('KNOWN CONTACT')
-        else:
-            token_labels = ['surname', 'facility_code', 'facility_name']
-            token_data = text.split()
 
-            self.debug(token_data)
+        if True:
+            expected_tokens = [{'surname': False}, {'facility_code': True}, {'facility_name': False}]
+            tokens = utils.split_into_tokens(expected_tokens, text)
 
-            if len(token_data) < len(token_labels):
-                self.debug('NOT ENOUGH TOKENS')
+            self.debug(tokens)
 
-            if len(token_data) > len(token_labels):
-                self.debug('TOO MANY TOKENS')
-                # if the third token is digits, condense the first
-                # two tokens into a single token
-                if token_data[2].isdigit():
-                    self.debug('MERGING SURNAME')
-                    surname_tokens = token_data[:2]
-                    surname = " ".join(surname_tokens)
-                    del token_data[:2]
-                    token_data.insert(0, surname)
-                    self.debug(token_data)
-
-                if len(token_data) > len(token_labels):
-                # if we still have too many tokens, and digits are
-                # in the right place, condense any following tokens
-                # into a single token
-                    if token_data[1].isdigit():
-                        self.debug('MERGING FACILITY NAME')
-                        fac_name_tokens = token_data[2:] 
-                        fac_name = " ".join(fac_name_tokens)
-                        del token_data[2:]
-                        token_data.append(fac_name)
-                        self.debug(token_data)
-
-            tokens = dict(zip(token_labels, token_data))
             if not tokens['surname'].isdigit():
                 possible_contacts_by_name = Contact.closest_by_name(tokens['surname'])
                 if len(possible_contacts) == 1:
@@ -125,24 +97,10 @@ class IdentifyHandler(KeywordHandler):
                 else:
                     # perfect match by either is also considered a winner
                     facility = fac_by_code if fac_by_code is not None else fac_by_name
+                    self.debug(facility)
 
             # neither lookup returned a perfect match
             else:
-                '''
-                # see how close the closest matches are for each kind of lookup
-                max_jw_code = max([c[3] for c in possible_fac_by_code])
-                max_jw_name = max([n[3] for n in possible_fac_by_name])
-
-                min_dl_code = min([c[2] for c in possible_fac_by_code])
-                min_dl_name = min([n[2] for n in possible_fac_by_name])
-
-                # see if one lookup performed a lot better than the other
-                if abs(max_jw_code - max_jw_name) >= .2:
-                    self.debug('BIG JW DIFF')
-
-                if abs(min_dl_code - min_dl_name) >= 2:
-                    self.debug('BIG DL DIFF')
-                '''
                 # make list of facility objects that are in both fac_by_code and fac_by_name
                 if possible_fac_by_code and possible_fac_by_name is not None:
                     possible_facilities.extend([l[1] for l in filter(lambda x:x in possible_fac_by_code, possible_fac_by_name)])
@@ -186,16 +144,18 @@ class IdentifyHandler(KeywordHandler):
                         known_contact = possible_contacts_by_both[0]
                         known_contact.phone = self.msg.connection.identity
                         known_contact.save()
-                        if facility is not None:
-                            self.respond("Hello %s, this phone number is now registered for %s (code: %s)" %\
-                                (known_contact.name, facility.name,\
-                                str(facility.code) + str(facility.satellite_number)))
-                        else:
-                            possible_facilities_names = [str(f.name) + " " +  str(f.code) + str(f.satellite_number) for f in possible_facilities]
-                            self.respond("Hello %s, did you mean one of: %s?" %\
-                                (known_contact.name, " ,".join(possible_facilities_names)))
+
                     else:
                         #possible_contacts_names = [c.name for c in possible_contacts_by_both]
                         possible_contacts_names = [c.name for c in possible_contacts_by_both]
                         self.respond("Did you mean one of: %s?" % (", ".join(possible_contacts_names)))
 
+            else:
+                if facility is not None:
+                    self.respond("Hello %s, this phone number is now registered for %s (code: %s)" %\
+                        (known_contact.name, facility.name,\
+                        str(facility.code) + str(facility.satellite_number)))
+                else:
+                    possible_facilities_names = [str(f.name) + " " +  str(f.code) + str(f.satellite_number) for f in possible_facilities]
+                    self.respond("Hello %s, did you mean one of: %s?" %\
+                        (known_contact.name, " ,".join(possible_facilities_names)))
