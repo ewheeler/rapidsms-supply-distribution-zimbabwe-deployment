@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
+import re
 import operator
 
 # http://code.google.com/p/pylevenshtein/
@@ -84,3 +85,74 @@ def closest_matches(d, n=100):
             return perfect_matches
         else:
             return best_matches
+
+def check_tokens(token_labels, token_isdigit_exp, submission):
+    #token_labels = ['surname', 'facility_code', 'facility_name']
+    #token_isdigit_exp = ['False', 'True', 'False']
+
+    #token_data = ['van', 'wheeler', '99', 'unicef', 'house']
+    #token_isdigit_act = ['False', 'False', 'True', 'False', 'False'] 
+
+    if len(token_data) < len(token_labels):
+        print ('NOT ENOUGH TOKENS')
+
+    def merge_leading():
+        for e, expected in enumerate(token_isdigit_exp):
+            for a, actual in enumerate(token_isdigit_act):
+                if expected is True and actual is False:
+                    if a == e:
+                        continue
+                if expected and actual is False:
+                    if e == a:
+                        break
+                if expected and actual is True:
+                    if a > 0 and e <= a:
+                        print '*** merging leading ***'
+                        leading_tokens = token_data[:a]
+                        new_lead = " ".join(leading_tokens)
+                        del token_data[:a]
+                        token_data.insert(0, new_lead)
+                        print token_data
+                        return
+
+    def merge_trailing():
+        for e, expected in enumerate(token_isdigit_exp):
+            for a, actual in enumerate(token_isdigit_act):
+                if expected is True and actual is False:
+                    if a == e:
+                        continue
+                if expected and actual is True:
+                    if e == a:
+                        break
+                if expected and actual is False:
+                    next_digit = None
+                    for d, digits in enumerate(token_isdigit_act):
+                        if d > a:
+                            if digits:
+                                next_digit = d
+                                break
+                    if e < a:
+                        print '*** merging trailing ***'
+                        print expected
+                        print actual
+                        print next_digit
+                        trailing_tokens = token_data[a:next_digit]
+                        print trailing_tokens
+                        new_trail = " ".join(trailing_tokens)
+                        print new_trail
+                        del token_data[a:next_digit]
+                        token_data.insert(a, new_trail)
+                        print token_data
+                        break
+                
+    token_data = submission.split()
+    print token_data
+    if len(token_data) > len(token_labels):
+        print ('TOO MANY TOKENS')
+        token_isdigit_act = [t.isdigit() for t in token_data]
+        merge_leading()
+        token_isdigit_act = [t.isdigit() for t in token_data]
+        merge_trailing()
+
+
+    return token_data
