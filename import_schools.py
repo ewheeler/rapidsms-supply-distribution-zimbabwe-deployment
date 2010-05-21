@@ -199,7 +199,7 @@ def import_csv(args):
                                 print school_counter
                                 continue
 
-                            if has_data(row, ['contact_name', 'phone', 'alternate_phone']): 
+                            if has_data(row, ['contact_name']): 
                                 try:
                                     clean_number = only_digits(row['phone'])
                                     clean_alt_number = only_digits(row['alternate_phone'])
