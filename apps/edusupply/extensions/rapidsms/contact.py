@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
+import operator
+
 from django.db import models
 from rapidsms.contrib.locations.models import Location
 
@@ -59,24 +61,39 @@ class HeadmasterOrDEO(models.Model):
             if search_sound[0] == obj_sound[0]:
                 # primary metaphones match exactly
                 same.append((obj, obj_sound, 1.0))
+                continue
             else:
+                if search_sound[1] is not None:
+                    # see if secondary metaphone of search_sound matches
+                    # primary metaphone of obj
+                    if search_sound[1] == obj_sound[0]:
+                        same.append((obj, obj_sound, 1.0))
+                        continue
+
                 # no exact match, so see if the primary metaphones are similar
                 primary_sound_dist = jarow(str(search_sound[0]), str(obj_sound[0]))
                 if primary_sound_dist >= similarity_threshold:
                     similar.append((obj, obj_sound, primary_sound_dist))
+                    continue
 
-                elif search_sound[1] is not None:
+                if search_sound[1] is not None:
                     # still dont have a good match. see if secondary metaphone
-                    # of obj name is similar to the search_sound
-                    secondary_sound_dist = jarow(str(search_sound[0]), str(obj_sound[1]))
+                    # of search_sound is similar to obj 
+                    secondary_sound_dist = jarow(str(search_sound[1]), str(obj_sound[0]))
                     if secondary_sound_dist >= similarity_threshold:
                         similar.append((obj, obj_sound, secondary_sound_dist))
-
-                else:
-                    continue
 
         if len(same) > 0:
             return search_sound, same
         else:
+            similar.sort(None, operator.itemgetter(2))
             # return similar sounding matches if there are no exact matches
+            # limit to top 50 percentile if there are more than 5 similar matches
+            if len(similar) > 5:
+                def average(values):
+                    return sum(values, 0.0) / len(values)
+                avg_jaro = average([x[2] for x in similar])
+                above_avg_jaro = [x for x in similar if (x[2] >= avg_jaro)]
+                return search_sound, above_avg_jaro
+                
             return search_sound, similar
