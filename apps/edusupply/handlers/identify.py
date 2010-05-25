@@ -56,14 +56,25 @@ class IdentifyHandler(KeywordHandler):
 
         if True:
             expected_tokens = [{'surname': False}, {'facility_code': True}, {'facility_name': False}]
-            tokens = utils.split_into_tokens(expected_tokens, text)
+            tokens, invalid_tokens = utils.split_into_tokens(expected_tokens, text)
 
             self.debug(tokens)
+            self.debug(invalid_tokens)
+
+            if len(invalid_tokens) > 0:
+                for k,v in invalid_tokens.iteritems():
+                    self.respond("Sorry, '%s' is not a valid %s" % (v, k))
+                # halt reporting process if any of the tokens are invalid
+                return True
 
             if not tokens['surname'].isdigit():
                 possible_contacts_by_name = Contact.closest_by_name(tokens['surname'])
-                if len(possible_contacts) == 1:
-                    known_contact = possible_contact[0][1]
+                if len(possible_contacts_by_name) == 1:
+                    known_contact = possible_contacts_by_name[0][1]
+
+                possible_contacts_by_sound = Contact.closest_by_sound(tokens['surname'])
+                if len(possible_contacts_by_sound) == 1:
+                    known_contact = possible_contacts_by_sound[0][0]
 
             if tokens['facility_code'].isdigit():
                 possible_fac_by_code = Location.closest_by_code(tokens['facility_code'])
@@ -91,9 +102,9 @@ class IdentifyHandler(KeywordHandler):
                     # if we have two different perfect matches, add to list
                     else:
                         possible_facilities.append(fac_by_code)
-                        self.debug("%s possible facilities by code" % (str(len(fac_by_code))))
+                        self.debug("%s possible facilities" % (str(len(possible_facilities))))
                         possible_facilities.append(fac_by_name)
-                        self.debug("%s possible facilities by name" % (str(len(fac_by_name))))
+                        self.debug("%s possible facilities" % (str(len(possible_facilities))))
                 else:
                     # perfect match by either is also considered a winner
                     facility = fac_by_code if fac_by_code is not None else fac_by_name
@@ -122,6 +133,11 @@ class IdentifyHandler(KeywordHandler):
                     self.debug("%s possible contacts by name" % (str(len(possible_contacts))))
                     self.debug(possible_contacts)
 
+                    # add Contacts from phonetic match tuples
+                    [possible_contacts.append(c[0]) for c in possible_contacts_by_sound]
+                    self.debug("%s possible contacts by name" % (str(len(possible_contacts))))
+                    self.debug(possible_contacts)
+
                     # lookup all the contacts associated with each possible_facilities from above
                     possible_contacts_by_loc_raw = [list(f.facilitycontact.all()) for f in possible_facilities]
                     # flatten list
@@ -146,7 +162,6 @@ class IdentifyHandler(KeywordHandler):
                         known_contact.save()
 
                     else:
-                        #possible_contacts_names = [c.name for c in possible_contacts_by_both]
                         possible_contacts_names = [c.name for c in possible_contacts_by_both]
                         self.respond("Did you mean one of: %s?" % (", ".join(possible_contacts_names)))
 
