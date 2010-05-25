@@ -25,6 +25,7 @@ INSTALLED_APPS = (
     "rapidsms.contrib.httptester", 
     "rapidsms.contrib.handlers", 
     "rapidsms.contrib.locations",
+    "rapidsms.contrib.messagelog",
 
     # enable the django admin using a little shim app (which includes
     # the required urlpatterns)
