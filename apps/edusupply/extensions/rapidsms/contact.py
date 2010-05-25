@@ -84,11 +84,11 @@ class HeadmasterOrDEO(models.Model):
                         similar.append((obj, obj_sound, secondary_sound_dist))
 
         if len(same) > 0:
-            return search_sound, same
+            return same
         else:
             similar.sort(None, operator.itemgetter(2))
             # return similar sounding matches if there are no exact matches
-            # limit to top 50 percentile if there are more than 5 similar matches
+            # limit to top 50 percent if there are more than 5 similar matches
             if len(similar) > 5:
                 def average(values):
                     return sum(values, 0.0) / len(values)
@@ -96,4 +96,4 @@ class HeadmasterOrDEO(models.Model):
                 above_avg_jaro = [x for x in similar if (x[2] >= avg_jaro)]
                 return search_sound, above_avg_jaro
                 
-            return search_sound, similar
+            return similar
