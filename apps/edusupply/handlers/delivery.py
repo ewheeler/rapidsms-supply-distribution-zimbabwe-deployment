@@ -51,9 +51,15 @@ class DeliveryHandler(KeywordHandler):
         condition = None
         observed_cargo = None
 
-        if self.msg.connection.identity is not None:
+        if self.msg.contact is not None:
+            self.debug(self.msg.contact)
+            known_contact = self.msg.contact
+
+        elif self.msg.connection.identity is not None:
             try:
                 known_contact = Contact.objects.get(phone=self.msg.connection.identity)
+                self.msg.connection.contact = known_contact
+                self.msg.connection.save()
             except MultipleObjectsReturned:
                 #TODO do something?
                 self.debug('MULTIPLE IDENTITIES')
@@ -63,13 +69,14 @@ class DeliveryHandler(KeywordHandler):
                 try:
                     known_contact = Contact.objects.get(alternate_phone=\
                         self.msg.connection.identity)
+                    self.msg.connection.contact = known_contact
+                    self.msg.connection.save()
                 except MultipleObjectsReturned:
                     #TODO this case may be unneccesary, since many many contacts
                     # often share a single alternate_phone
                     self.debug('MULTIPLE IDENTITIES AFTER UNKNOWN')
                     pass
                 except ObjectDoesNotExist:
-                    #TODO handler for this response
                     self.respond("Sorry, I don't recognize your phone number. Please respond with your surname, facility (school or DEO) code, and facility name.")
         else:
             self.debug('NO IDENTITY')
