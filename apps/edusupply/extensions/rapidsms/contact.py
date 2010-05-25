@@ -2,6 +2,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 import operator
+import datetime
 
 from django.db import models
 from rapidsms.contrib.locations.models import Location
@@ -18,6 +19,18 @@ class HeadmasterOrDEO(models.Model):
 
     class Meta:
         abstract = True
+
+    def num_messages_sent(self, when=None):
+        time_chunks = {
+                'today' : datetime.datetime.now().date(),
+                'week' : (datetime.datetime.now()-datetime.timedelta(weeks=1)),
+                'month' : (datetime.datetime.now()-datetime.timedelta(days=30)),
+                'year' : (datetime.datetime.now()-datetime.timedelta(days=365))}
+        if when in time_chunks.keys():
+                return self.message_set.filter(\
+                    direction='I', date__gte=time_chunks[when]).count()
+        else:
+            return self.message_set.filter(direction='I').count()
 
     @classmethod
     def closest_by_name(klass, search_string, n=100):
