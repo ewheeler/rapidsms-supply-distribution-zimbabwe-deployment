@@ -44,6 +44,8 @@ class IdentifyHandler(KeywordHandler):
         if self.msg.connection.identity is not None:
             try:
                 known_contact = Contact.objects.get(phone=self.msg.connection.identity)
+                self.msg.connection.contact = known_contact
+                self.msg.connection.save()
                 self.debug('KNOWN CONTACT')
             except MultipleObjectsReturned:
                 #TODO do something?
@@ -56,25 +58,22 @@ class IdentifyHandler(KeywordHandler):
 
         if True:
             expected_tokens = [{'surname': False}, {'facility_code': True}, {'facility_name': False}]
-            tokens, invalid_tokens = utils.split_into_tokens(expected_tokens, text)
+            tokens = utils.split_into_tokens(expected_tokens, text)
 
             self.debug(tokens)
-            self.debug(invalid_tokens)
-
-            if len(invalid_tokens) > 0:
-                for k,v in invalid_tokens.iteritems():
-                    self.respond("Sorry, '%s' is not a valid %s" % (v, k))
-                # halt reporting process if any of the tokens are invalid
-                return True
 
             if not tokens['surname'].isdigit():
                 possible_contacts_by_name = Contact.closest_by_name(tokens['surname'])
                 if len(possible_contacts_by_name) == 1:
                     known_contact = possible_contacts_by_name[0][1]
+                    self.msg.connection.contact = known_contact
+                    self.msg.connection.save()
 
                 possible_contacts_by_sound = Contact.closest_by_sound(tokens['surname'])
                 if len(possible_contacts_by_sound) == 1:
                     known_contact = possible_contacts_by_sound[0][0]
+                    self.msg.connection.contact = known_contact
+                    self.msg.connection.save()
 
             if tokens['facility_code'].isdigit():
                 possible_fac_by_code = Location.closest_by_code(tokens['facility_code'])
@@ -159,6 +158,8 @@ class IdentifyHandler(KeywordHandler):
                     if len(possible_contacts_by_both) == 1:
                         known_contact = possible_contacts_by_both[0]
                         known_contact.phone = self.msg.connection.identity
+                        self.msg.connection.contact = known_contact
+                        self.msg.connection.save()
                         known_contact.save()
 
                     else:
