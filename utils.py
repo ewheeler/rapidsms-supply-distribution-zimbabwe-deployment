@@ -91,16 +91,21 @@ def split_into_tokens(expected_tokens, submission):
     type_tokens_exp = [item for sublist in [x.values() for x in expected_tokens] for item in sublist]
     tokens_labels = [item for sublist in [x.keys() for x in expected_tokens] for item in sublist]
 
-    #num_tokens_act = [re.sub(' ', '', n) for n in re.findall('\d+\.?\s?\d+?', submission)]
+    tokens_act = re.findall('\W+', submisison)
+
     num_tokens_act = re.findall('\d+', submission)
     print num_tokens_act
-    if type_tokens_exp.count(True) != len(num_tokens_act):
+    if type_tokens_exp.count(True) > len(num_tokens_act):
         print 'missing num token'
+    if type_tokens_exp.count(True) < len(num_tokens_act):
+        print 'extra num token'
 
     word_tokens_act = [w.strip() for w in re.findall('\D+', submission) if w not in ['.', ' ', '']]
     print word_tokens_act
-    if type_tokens_exp.count(False) != len(word_tokens_act):
+    if type_tokens_exp.count(False) > len(word_tokens_act):
         print 'missing word token'
+    if type_tokens_exp.count(False) < len(word_tokens_act):
+        print 'extra word token'
 
     tokens_data = []
     for digit in type_tokens_exp:
