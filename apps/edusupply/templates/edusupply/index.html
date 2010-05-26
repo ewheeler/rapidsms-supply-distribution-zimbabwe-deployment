@@ -1,0 +1,41 @@
+{% extends "layout-split-2.html" %}
+{% block title %}Shipment Reports{% endblock %}
+{% block content %}
+
+<div class="module">
+
+<h2>Shipments</h2>
+<table width="100%">
+    <thead>
+        <tr>
+            <th>Cargo</th>
+            <th>Shipped</th>
+            <th>Destination</th>
+            <th>Status</th>
+            <th>Delivered</th>
+            <th>Reported by</th>
+            <th>Condition</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ship in shipments %}
+            <tr>
+                <td>{{ship.cargos_str}}</td>
+                <td>{{ship.shipping_time|date:"d-M-Y H:m:s"}}</td>
+                <td>{{ship.destination}}</td>
+                <td>{{ship.get_status_display}}</td>
+                <td>{{ship.actual_delivery_time|date:"d-M-Y H:m:s"}}</td>
+                <td>{{ship.delivery_sighting.seen_by}}</td>
+                <td>{{ship.delivery_sighting.observed_cargo.get_condition_display}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="toolbar">
+    <a href="/edusupply/csv/reports" class="export">Export</a>
+</div>
+
+
+</div>
+{% endblock %}
