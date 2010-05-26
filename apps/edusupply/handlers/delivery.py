@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
+import datetime
+
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.models import Max
 
@@ -207,6 +209,7 @@ class DeliveryHandler(KeywordHandler):
 
                                 # associate new Cargo with Shipment
                                 active_shipment.status = 'D'
+                                active_shipment.actual_delivery_time=datetime.datetime.now()
                                 active_shipment.cargos.add(observed_cargo)
                                 active_shipment.save()
 
