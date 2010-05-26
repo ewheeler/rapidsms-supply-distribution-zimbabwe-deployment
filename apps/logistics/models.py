@@ -108,14 +108,26 @@ class ShipmentBase(models.Model):
         abstract = True
 
     def __unicode__(self):
+        if self.origin is not None:
+            return "%s from %s to %s" % (self.cargos_str, self.origin.name, self.destination.name)
+        else:
+            return "%s from ?? to %s" % (self.cargos_str, self.destination.name)
+
+    @property
+    def cargos_str(self):
         cargos_names = []
         for cargo in self.cargos.all():
             if cargo.commodity.slug not in cargos_names:
                 cargos_names.append(cargo.commodity.slug)
-        if self.origin is not None:
-            return "%s from %s to %s" % (", ".join(cargos_names), self.origin.name, self.destination.name)
-        else:
-            return "%s from ?? to %s" % (", ".join(cargos_names), self.destination.name)
+        return "%s" % (", ".join(cargos_names))
+
+    @property
+    def delivery_sighting(self):
+        for route in self.shipmentroute_set.all():
+            for sighting in route.sightings.all():
+                if sighting.location.pk == self.destination.pk:
+                    return sighting
+        return ""
 
     @classmethod
     def active(cls):
