@@ -8,8 +8,13 @@
 <table width="100%">
     <thead>
         <tr>
+            {# XXX many of these are specific to edusupply's app's extension of cargo #}
             <th>Cargo</th>
             <th>Destination</th>
+            <th>Destination code</th>
+            <th>Destination contact</th>
+            <th>Destination contact phone</th>
+            <th>Destination contact alternate phone</th>
             <th>Status</th>
             <th>Shipped</th>
             <th>Delivered</th>
@@ -20,13 +25,17 @@
     <tbody>
         {% for ship in shipments %}
             <tr>
+                {# XXX many of these are specific to edusupply's app's extension of cargo #}
                 <td>{{ship.cargos_str}}</td>
                 <td>{{ship.destination}}</td>
+                <td>{{ship.destination.full_code}}</td>
+                <td>{{ship.destination.contact}}</td>
+                <td>{{ship.destination.contact_phone}}</td>
+                <td>{{ship.destination.contact_alt_phone}}</td>
                 <td>{{ship.get_status_display}}</td>
                 <td>{{ship.shipping_time|date:"d-M-Y H:m:s"}}</td>
                 <td>{{ship.actual_delivery_time|date:"d-M-Y H:m:s"}}</td>
                 <td>{{ship.delivery_sighting.seen_by}}</td>
-                {# XXX the following line is specific to edusupply's app's extension of cargo #}
                 <td>{{ship.delivery_sighting.observed_cargo.get_condition_display}}</td>
             </tr>
         {% endfor %}
