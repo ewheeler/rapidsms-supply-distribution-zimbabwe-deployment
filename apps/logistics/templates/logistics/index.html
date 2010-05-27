@@ -19,6 +19,7 @@
             <th>Shipped</th>
             <th>Delivered</th>
             <th>Reported by</th>
+            <th>Cargo</th>
             <th>Condition</th>
         </tr>
     </thead>
@@ -36,6 +37,7 @@
                 <td>{{ship.shipping_time|date:"d-M-Y H:m:s"}}</td>
                 <td>{{ship.actual_delivery_time|date:"d-M-Y H:m:s"}}</td>
                 <td>{{ship.delivery_sighting.seen_by}}</td>
+                <td>{{ship.delivery_sighting.observed_cargo}}</td>
                 <td>{{ship.delivery_sighting.observed_cargo.get_condition_display}}</td>
             </tr>
         {% endfor %}
