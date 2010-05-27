@@ -118,8 +118,8 @@ class ShipmentBase(models.Model):
     def cargos_str(self):
         cargos_names = []
         for cargo in self.cargos.all():
-            if cargo.commodity.slug not in cargos_names:
-                cargos_names.append(cargo.commodity.slug)
+            if cargo.__unicode__() not in cargos_names:
+                cargos_names.append(cargo.__unicode__())
         return "%s" % (", ".join(cargos_names))
 
     @property
