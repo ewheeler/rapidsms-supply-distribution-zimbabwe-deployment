@@ -26,6 +26,7 @@
                 <td>{{ship.get_status_display}}</td>
                 <td>{{ship.actual_delivery_time|date:"d-M-Y H:m:s"}}</td>
                 <td>{{ship.delivery_sighting.seen_by}}</td>
+                {# XXX the following line is specific to edusupply's app's extension of cargo #}
                 <td>{{ship.delivery_sighting.observed_cargo.get_condition_display}}</td>
             </tr>
         {% endfor %}
