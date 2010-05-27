@@ -21,6 +21,7 @@ class CommodityBase(models.Model):
         ('LT', 'Liters'),
         ('CN', 'Containers'),
         ('DS', 'Doses'),
+        ('OT', 'Other'),
         ('UK', 'Unknown'),
     )
     name = models.CharField(max_length=160)
