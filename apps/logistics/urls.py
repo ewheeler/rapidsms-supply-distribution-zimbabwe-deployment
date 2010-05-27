@@ -9,10 +9,10 @@ import views as v
 urlpatterns = patterns('',
     
     # mini dashboard for this app
-    url(r'^edusupply/?$',
+    url(r'^logistics/?$',
         v.index),
 
-#    url(r'^edusupply/csv/reports?$', 
+#    url(r'^logistics/csv/reports?$', 
 #        v.csv_reports),
  
 )
