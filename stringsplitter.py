@@ -5,8 +5,6 @@ import re
 
 patterns = [
     ('number', re.compile('\d+')),
-    #('float', re.compile('\d*\.?\d*')),
-    ('bool', re.compile('yes|y|yeah|oui|o|true|t|no|n|nope|non|false|f')), 
     ('word', re.compile('\w+')),
     ('.', re.compile(r'\.')),
     (',', re.compile(r'\,')),
@@ -29,14 +27,17 @@ def tokenize(string):
 
 def parseNumber(tokens):
     print 'PARSING NUMBER'
-    tokentype, literal = tokens.pop(0)
-    print tokentype
-    print literal
-    assert tokentype == 'number'
-    return literal
+    try:
+        assert tokens[0][0] == 'number'
+        tokentype, literal = tokens.pop(0)
+        return literal
+    except AssertionError:
+        return None
 
 def parseFloat(tokens):
     print 'PARSING FLOAT'
+    # TODO this is too greedy and will combine several sequential
+    # numbers even if they are separated by spaces
     float_str = parseNumber(tokens)
     print float_str
     while tokens and tokens[0][0] in ('.', ',', 'number'):
@@ -50,11 +51,12 @@ def parseFloat(tokens):
 
 def parseWord(tokens):
     print 'PARSING WORD'
-    tokentype, literal = tokens.pop(0)
-    print tokentype
-    print literal
-    assert tokentype == 'word'
-    return literal
+    try:
+        assert tokens[0][0] == 'word'
+        tokentype, literal = tokens.pop(0)
+        return literal
+    except AssertionError:
+        return None
 
 def parseWords(tokens):
     print 'PARSING WORDS'
