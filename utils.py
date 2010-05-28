@@ -13,6 +13,8 @@ from jarow import jarow
 # http://mwh.geek.nz/2009/04/26/python-damerau-levenshtein-distance/
 from dameraulevenshtein import dameraulevenshtein
 
+import stringsplitter
+
 def calc_dists(mine, theirs):
     ''' Calculates Levenshtein distance, Damerau-Levenshtein distance,
         and Jaro-Winkler distance between two strings.
@@ -86,31 +88,7 @@ def closest_matches(d, n=100):
         else:
             return best_matches
 
-def split_into_tokens(expected_tokens, submission):
-
-    type_tokens_exp = [item for sublist in [x.values() for x in expected_tokens] for item in sublist]
-    tokens_labels = [item for sublist in [x.keys() for x in expected_tokens] for item in sublist]
-
-    num_tokens_act = re.findall('\d+', submission)
-    print num_tokens_act
-    if type_tokens_exp.count(True) > len(num_tokens_act):
-        print 'missing num token'
-    if type_tokens_exp.count(True) < len(num_tokens_act):
-        print 'extra num token'
-
-    word_tokens_act = [w.strip() for w in re.findall('\D+', submission) if w not in ['.', ' ', '']]
-    #word_tokens_act = re.findall('\D+', submission)
-    print word_tokens_act
-    if type_tokens_exp.count(False) > len(word_tokens_act):
-        print 'missing word token'
-    if type_tokens_exp.count(False) < len(word_tokens_act):
-        print 'extra word token'
-
-    tokens_data = []
-    for digit in type_tokens_exp:
-        if digit:
-            tokens_data.append(num_tokens_act.pop(0))
-        else:
-            tokens_data.append(word_tokens_act.pop(0))
-    
-    return dict(zip(tokens_labels, tokens_data))
+def split_into_tokens(expected_tokens, labels, submission):
+    tokens_list = stringsplitter.parse_into_tokens(expected_tokens, labels, submission)
+    # TODO refactor handlers to use tuples or move this into handlers?
+    return dict(tokens_list)

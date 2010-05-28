@@ -57,8 +57,9 @@ class IdentifyHandler(KeywordHandler):
             self.debug('NO IDENTITY')
 
         if True:
-            expected_tokens = [{'surname': False}, {'facility_code': True}, {'facility_name': False}]
-            tokens = utils.split_into_tokens(expected_tokens, text)
+            expected_tokens = ['word', 'number', 'words']
+            token_labels = ['surname', 'facility_code', 'facility_name']
+            tokens = utils.split_into_tokens(expected_tokens, token_labels, text)
 
             self.debug(tokens)
 

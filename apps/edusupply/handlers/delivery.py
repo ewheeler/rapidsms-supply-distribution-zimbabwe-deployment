@@ -86,8 +86,9 @@ class DeliveryHandler(KeywordHandler):
         if known_contact is not None:
             self.debug('KNOWN PERSON')
 
-            expected_tokens = [{'commodity': False}, {'school_code': True}, {'quantity': True}, {'condition': True}]
-            tokens = utils.split_into_tokens(expected_tokens, text)
+            expected_tokens = ['word', 'number', 'number', 'number']
+            token_labels = ['commodity', 'school_code', 'quantity', 'condition']
+            tokens = utils.split_into_tokens(expected_tokens, token_labels, text)
 
             self.debug(tokens)
 
