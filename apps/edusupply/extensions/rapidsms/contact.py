@@ -9,6 +9,7 @@ from rapidsms.contrib.locations.models import Location
 
 import utils
 
+# http://github.com/dracos/double-metaphone
 from metaphone import dm
 from jarow import jarow
 
