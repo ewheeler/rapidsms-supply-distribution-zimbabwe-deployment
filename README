@@ -6,3 +6,16 @@ into site-packages. For now, it is a submodule.
 The RapidSMS repo also contains submodules of its own, so don't forget
 to `git submodule init` and `git submodule update` those, too.
 
+DEPENDENCIES
+
+# copy and paste this into a file called dameraulevenshtein.py in your
+# site-packages or dist-packages
+http://mwh.geek.nz/2009/04/26/python-damerau-levenshtein-distance/
+
+# clone and symlink metaphone.py in your site-packages or dist-packages
+http://github.com/dracos/double-metaphone
+
+# to install the c versions of these libraries, you need a c compiler and pythonheaders
+# on debian/ubuntu: sudo apt-get install build-essential python-dev
+http://code.google.com/p/pylevenshtein/
+http://bitpim.svn.sourceforge.net/viewvc/bitpim/trunk/bitpim/src/native/strings/
