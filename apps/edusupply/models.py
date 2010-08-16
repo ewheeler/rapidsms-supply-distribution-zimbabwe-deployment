@@ -2,18 +2,19 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from django.db import models
-
+from rapidsms.contrib.locations.models import Location
 import utils
 
-class School(models.Model):
+class Facility(Location):
+    class Meta:
+        verbose_name_plural = "facilities"
+    
+class School(Facility):
     address = models.CharField(max_length=200, blank=True, null=True)
     km_to_DEO = models.CharField(max_length=160, blank=True, null=True)
     code = models.PositiveIntegerField(max_length=20, blank=True, null=True)
     satellite_number = models.PositiveIntegerField(max_length=20, blank=True, null=True)
     
-    class Meta:
-        abstract = True
-
     @property
     def full_code(self):
         return "%s" % (str(self.code) + str(self.satellite_number))
