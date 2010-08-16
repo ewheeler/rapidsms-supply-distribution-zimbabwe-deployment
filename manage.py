@@ -4,8 +4,13 @@
 import sys, os
 
 from django.core.management import execute_manager
-import settings
 
+
+# use a default settings module if none was specified on the command line
+DEFAULT_SETTINGS = 'settings'
+settings_specified = any([arg.startswith('--settings=') for arg in sys.argv])
+if not settings_specified and len(sys.argv) >= 2:
+    sys.argv.append('--settings=%s' % DEFAULT_SETTINGS)
 
 if __name__ == "__main__":
     project_root = os.path.abspath(
@@ -15,4 +20,6 @@ if __name__ == "__main__":
     sys.path.insert(0, path)
 
     sys.path.insert(0, project_root)
+
+    import settings
     execute_manager(settings)
