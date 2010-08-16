@@ -3,16 +3,12 @@
 
 
 from django.templatetags.tabs_tags import register_tab
-
-from rapidsms.utils.render_to_response import render_to_response
-#from rapidsms.utils.pagination import paginated
+from django.template import RequestContext
+from django.shortcuts import render_to_response
 
 from .models import Shipment
 
-@register_tab(caption="Shipments")
 def index(req):
-    template_name="logistics/index.html"
-    context = {}
-    #context['entries'] = paginated(req, all, per_page=50)
-    context['shipments'] = Shipment.objects.all()
-    return render_to_response(req, template_name, context )
+    return render_to_response("logistics/index.html",\
+        {'shipments': Shipment.objects.all()},\
+        context_instance=RequestContext(req))
