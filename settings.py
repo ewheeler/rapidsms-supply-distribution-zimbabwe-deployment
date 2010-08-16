@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "rapidsms.contrib.search",
     "rapidsms.contrib.echo",
 
+    "edusupply",
     "logistics",
 ]
 
