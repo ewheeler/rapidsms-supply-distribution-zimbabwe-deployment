@@ -6,8 +6,7 @@ from django.db import models
 
 from rapidsms.models import ExtensibleModelBase
 from rapidsms.models import Contact
-from rapidsms.contrib.locations.models import Location
-
+from edusupply.models import School
 
 class CommodityBase(models.Model):
     ''' Stuff '''
@@ -91,8 +90,8 @@ class ShipmentBase(models.Model):
     status = models.CharField(max_length=3, choices=STATUS_CHOICES)
     cargos = models.ManyToManyField(Cargo)
 
-    origin = models.ForeignKey(Location, related_name='origin', blank=True, null=True)
-    destination = models.ForeignKey(Location, related_name='destination')
+    origin = models.ForeignKey(School, related_name='origin', blank=True, null=True)
+    destination = models.ForeignKey(School, related_name='destination')
 
     created = models.DateTimeField(default=datetime.datetime.utcnow)
     modified = models.DateTimeField(default=datetime.datetime.utcnow)
@@ -140,7 +139,7 @@ class Shipment(ShipmentBase):
 
 class ShipmentSightingBase(models.Model):
     updated = models.DateTimeField(default=datetime.datetime.utcnow)
-    location = models.ForeignKey(Location)
+    location = models.ForeignKey(School)
     observed_cargo = models.ForeignKey(Cargo, blank=True, null=True)
     seen_by = models.ForeignKey(Contact)
 

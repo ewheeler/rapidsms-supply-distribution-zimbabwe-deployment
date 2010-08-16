@@ -6,9 +6,9 @@ import datetime
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.models import Max
 
-from rapidsms.contrib.handlers import KeywordHandler
-from rapidsms.contrib.locations.models import Location
+from rapidsms.contrib.handlers.handlers.keyword import KeywordHandler
 from rapidsms.models import Contact
+from edusupply.models import School
 
 import utils
 
@@ -122,7 +122,7 @@ class DeliveryHandler(KeywordHandler):
             if tokens['school_code'].isdigit():
 
                 def list_possible_schools_for_code(school_num):
-                    possible_schools = Location.objects.filter(code=school_num)
+                    possible_schools = School.objects.filter(code=school_num)
                     if not possible_schools:
                         return None
                     else:
@@ -138,7 +138,7 @@ class DeliveryHandler(KeywordHandler):
                 # school code should be between 1 and 5 digits,
                 # and satellite_number should be 1 digit.
                 # in the interest of not hardcoding anything, lets hit the db!
-                max_codes = Location.objects.aggregate(max_code=Max('code'),\
+                max_codes = School.objects.aggregate(max_code=Max('code'),\
                     max_sat=Max('satellite_number'))
                 max_code_length = len(str(max_codes['max_code']))
                 max_sat_length = len(str(max_codes['max_sat']))
@@ -148,7 +148,7 @@ class DeliveryHandler(KeywordHandler):
                     school_num = tokens['school_code'][:-1]
                     sat_num = tokens['school_code'][-1:]
                     try:
-                        facility = Location.objects.get(code=school_num,\
+                        facility = School.objects.get(code=school_num,\
                             satellite_number=sat_num)
 
                     except ObjectDoesNotExist:

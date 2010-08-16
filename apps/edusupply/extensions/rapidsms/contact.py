@@ -5,7 +5,7 @@ import operator
 import datetime
 
 from django.db import models
-from rapidsms.contrib.locations.models import Location
+from edusupply.models import Facility
 
 import utils
 
@@ -16,7 +16,7 @@ from jarow import jarow
 class HeadmasterOrDEO(models.Model):
     phone = models.CharField(max_length=160, blank=True, null=True)
     alternate_phone = models.CharField(max_length=160, blank=True, null=True)
-    facilities = models.ManyToManyField(Location, related_name='facilitycontact', blank=True, null=True)
+    facility = models.ManyToManyField(Facility, related_name='facilitycontact', blank=True, null=True)
 
     class Meta:
         abstract = True

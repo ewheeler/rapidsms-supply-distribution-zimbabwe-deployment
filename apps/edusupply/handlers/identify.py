@@ -3,9 +3,9 @@
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
-from rapidsms.contrib.handlers import KeywordHandler
-from rapidsms.contrib.locations.models import Location
+from rapidsms.contrib.handlers.handlers.keyword import KeywordHandler
 from rapidsms.models import Contact
+from edusupply.models import School
 
 import utils
 
@@ -77,7 +77,7 @@ class IdentifyHandler(KeywordHandler):
                     self.msg.connection.save()
 
             if tokens['facility_code'].isdigit():
-                possible_fac_by_code = Location.closest_by_code(tokens['facility_code'])
+                possible_fac_by_code = School.closest_by_code(tokens['facility_code'])
                 self.debug("%s possible facilities by code" % (str(len(possible_fac_by_code))))
                 if len(possible_fac_by_code) == 1:
                     if possible_fac_by_code[0][2] == 0 and possible_fac_by_code[0][3] == 0 and possible_fac_by_code[0][4] == 1.0:
@@ -85,7 +85,7 @@ class IdentifyHandler(KeywordHandler):
                         fac_by_code = possible_fac_by_code[0][1]
 
             if not tokens['facility_name'].isdigit():
-                possible_fac_by_name = Location.closest_by_name(tokens['facility_name'])
+                possible_fac_by_name = School.closest_by_name(tokens['facility_name'])
                 self.debug("%s possible facilities by name" % (str(len(possible_fac_by_name))))
                 if len(possible_fac_by_name) == 1:
                     if possible_fac_by_name[0][2] == 0 and possible_fac_by_name[0][3] == 0 and possible_fac_by_name[0][4] == 1.0:
