@@ -5,11 +5,25 @@ from django.db import models
 from rapidsms.contrib.locations.models import Location
 import utils
 
-class Facility(Location):
+class Country(Location):
+    name = models.CharField(max_length=200, blank=True, null=True)
+    slug = models.CharField(max_length=100, blank=True, null=True)
     class Meta:
-        verbose_name_plural = "facilities"
-    
-class School(Facility):
+        verbose_name_plural = "countries"
+
+class Province(Location):
+    name = models.CharField(max_length=200, blank=True, null=True)
+    slug = models.CharField(max_length=100, blank=True, null=True)
+
+class District(Location):
+    name = models.CharField(max_length=200, blank=True, null=True)
+    slug = models.CharField(max_length=100, blank=True, null=True)
+    code = models.PositiveIntegerField(max_length=20, blank=True, null=True)
+
+class School(Location):
+    name = models.CharField(max_length=200, blank=True, null=True)
+    slug = models.CharField(max_length=100, blank=True, null=True)
+    code = models.PositiveIntegerField(max_length=20, blank=True, null=True)
     address = models.CharField(max_length=200, blank=True, null=True)
     km_to_DEO = models.CharField(max_length=160, blank=True, null=True)
     code = models.PositiveIntegerField(max_length=20, blank=True, null=True)
@@ -64,7 +78,7 @@ class School(Facility):
     def closest_by_code(klass, search_string, n=100):
         d = []
 
-        for obj in klass.objects.filter(type__slug='schools'):
+        for obj in klass.objects.all():
 
             args = [str(obj.code), search_string]
             alt_args = [str(obj.code) + str(obj.satellite_number), search_string]
@@ -85,7 +99,7 @@ class School(Facility):
     def closest_by_name(klass, search_string, n=100):
         d = []
 
-        for obj in klass.objects.filter(type__slug='schools'):
+        for obj in klass.objects.all():
             args = [str(obj.name).upper(), search_string.upper()]
 
             args_dists = utils.calc_dists(*args)

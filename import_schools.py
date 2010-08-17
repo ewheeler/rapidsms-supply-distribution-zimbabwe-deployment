@@ -10,6 +10,7 @@ import re
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.management import setup_environ
 from django.template.defaultfilters import slugify
+from django.contrib.contenttypes.models import ContentType
 
 from decimal import Decimal as D
 import decimaldegrees as dd
@@ -22,9 +23,13 @@ import decimaldegrees as dd
 
 
 from rapidsms.models import Contact
-from rapidsms.contrib.locations.models import Location
-from rapidsms.contrib.locations.models import LocationType
 from rapidsms.contrib.locations.models import Point
+
+from edusupply.models import School
+from edusupply.models import District 
+from edusupply.models import Province 
+from edusupply.models import Country 
+
 from logistics.models import Commodity
 from logistics.models import Cargo
 from logistics.models import Shipment
@@ -46,13 +51,8 @@ def import_csv(args):
         quoting=csv.QUOTE_ALL, doublequote=True)
 
     try:
-        countries, c_created = LocationType.objects.get_or_create(singular="Country", plural="Countries",\
-            slug="countries")
-        country, c_created = Location.objects.get_or_create(name="Zimbabwe",\
-            type=countries, slug=slugify("Zimbabwe"))
-
-        provinces, p_created = LocationType.objects.get_or_create(singular="Province",\
-            plural="Provinces", slug="provinces", exists_in=country)
+        country, c_created = Country.objects.get_or_create(name="Zimbabwe",\
+            slug=slugify("Zimbabwe"))
 
         #TODO calculate per-pallet weight
         commodity, c_created = Commodity.objects.get_or_create(name="Textbooks",\
@@ -88,22 +88,21 @@ def import_csv(args):
                     return None
 
             if has_datum(row, 'ProvName'):
-                province, created = Location.objects.get_or_create(\
-                    name=row['ProvName'], type=provinces, slug=slugify(row['ProvName']))
+                province, created = Province.objects.get_or_create(\
+                    name=row['ProvName'], slug=slugify(row['ProvName']),\
+                    parent_id=country.pk, parent_type=ContentType.objects.get(model='country'))
 
                 if has_data(row, ['DistName', 'DistCode']):
-                    districts, created = LocationType.objects.get_or_create(\
-                        singular='District', plural='Districts',\
-                        slug='districts', exists_in=province)
-                    district, created = Location.objects.get_or_create(name=row['DistName'],\
-                        type=districts, code=row['DistCode'], slug=slugify(row['DistName']))
+                    district, created = District.objects.get_or_create(name=row['DistName'],\
+                        code=row['DistCode'], slug=slugify(row['DistName']),\
+                        parent_id=province.pk, parent_type=ContentType.objects.get(model='province'))
 
                     if has_data(row, ['deo', 'phone_number']):
                         try:
                             clean_phone_number = only_digits(row['phone_number'])
                             deo, created = Contact.objects.get_or_create(name=row['deo'],\
                                     phone=clean_phone_number)
-                            deo.facilities.add(district)
+                            deo.districts.add(district)
                             deo.save()
 
                         except Exception, e:
@@ -138,17 +137,6 @@ def import_csv(args):
 
                         else:
                             point = None
-
-                        try:
-                            schools, created = LocationType.objects.get_or_create(\
-                                singular='School', plural='Schools',\
-                                slug='schools', exists_in=district)
-
-                        except Exception, e:
-                            print 'BANG schools:'
-                            print e
-                            print row
-                            continue
 
                         if has_data(row, ['school_name', 'SchoolType']):
                             school_type = row['SchoolType']
@@ -186,10 +174,11 @@ def import_csv(args):
                                 safe_code = None
 
                             try:
-                                school, created = Location.objects.get_or_create(name=row['school_name'],\
+                                school, created = School.objects.get_or_create(name=row['school_name'],\
                                     address=safe_address, code=safe_code,\
-                                    km_to_DEO=clean_km_to_DEO, type=schools, slug=slugify(row['school_name']),\
-                                    satellite_number=satellite_code, point=point)
+                                    km_to_DEO=clean_km_to_DEO, slug=slugify(row['school_name']),\
+                                    satellite_number=satellite_code, point=point,\
+                                    parent_id=district.pk, parent_type=ContentType.objects.get(model='district'))
                                 school_counter += 1
 
                             except Exception, e:
@@ -206,7 +195,7 @@ def import_csv(args):
                                     headmaster, created = Contact.objects.get_or_create(name=row['contact_name'],\
                                         phone=clean_number)
                                     headmaster.alternate_phone = clean_alt_number
-                                    headmaster.facilities.add(school)
+                                    headmaster.schools.add(school)
                                     headmaster.save()
 
                                 except Exception, e:

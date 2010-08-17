@@ -7,6 +7,7 @@ from django.db import models
 from rapidsms.models import ExtensibleModelBase
 from rapidsms.models import Contact
 from edusupply.models import School
+from edusupply.models import Country
 
 class CommodityBase(models.Model):
     ''' Stuff '''
@@ -90,7 +91,7 @@ class ShipmentBase(models.Model):
     status = models.CharField(max_length=3, choices=STATUS_CHOICES)
     cargos = models.ManyToManyField(Cargo)
 
-    origin = models.ForeignKey(School, related_name='origin', blank=True, null=True)
+    origin = models.ForeignKey(Country, related_name='origin', blank=True, null=True)
     destination = models.ForeignKey(School, related_name='destination')
 
     created = models.DateTimeField(default=datetime.datetime.utcnow)
