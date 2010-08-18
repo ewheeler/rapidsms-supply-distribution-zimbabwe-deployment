@@ -148,8 +148,10 @@ class DeliveryHandler(KeywordHandler):
                     school_num = tokens['school_code'][:-1]
                     sat_num = tokens['school_code'][-1:]
                     try:
-                        facility = School.objects.get(code=school_num,\
+                        school = School.objects.get(code=school_num,\
                             satellite_number=sat_num)
+                        facility, f_created = Facility.objects.get_or_create(location_id=school.pk,\
+                            location_type=ContentType.objects.get(model='school'))
 
                     except ObjectDoesNotExist:
                         self.respond("Sorry %s, no record of school with code '%s'" % (known_contact.name, tokens['school_code']))
