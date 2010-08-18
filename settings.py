@@ -72,7 +72,7 @@ INSTALLED_APPS = [
     "rapidsms.contrib.locations",
     "rapidsms.contrib.messagelog",
     "rapidsms.contrib.messaging",
-    "rapidsms.contrib.registration",
+    #"rapidsms.contrib.registration",
     "rapidsms.contrib.scheduler",
     "rapidsms.contrib.search",
     "rapidsms.contrib.echo",
@@ -88,11 +88,12 @@ INSTALLED_APPS = [
 TABS = [
     ("rapidsms.views.dashboard",                            "Dashboard"),
     ("rapidsms.contrib.messagelog.views.message_log",       "Message Log"),
-    ("rapidsms.contrib.registration.views.registration",    "Registration"),
+    #("rapidsms.contrib.registration.views.registration",    "Registration"),
     ("rapidsms.contrib.messaging.views.messaging",          "Messaging"),
     ("rapidsms.contrib.locations.views.locations",          "Map"),
     ("rapidsms.contrib.scheduler.views.index",              "Event Scheduler"),
     ("rapidsms.contrib.httptester.views.generate_identity", "Message Tester"),
+    ("logistics.views.index", "Shipments"),
 ]
 
 
