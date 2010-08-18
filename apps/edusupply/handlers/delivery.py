@@ -182,22 +182,8 @@ class DeliveryHandler(KeywordHandler):
                         # map expected condition tokens into choices for db
                         conditions_map = {'1':'G', '2':'D', '3':'L'}
 
-                        def get_active_shipment(dest):
-                            # returns a single Shipment (not a queryset)
-                            active_shipment = Shipment.objects.filter(\
-                                destination=facility).exclude(status='D')
-                            if active_shipment.count() > 1:
-                                self.debug('MANY POSSIBLE SHIPMENTS')
-                                return None
-                            if active_shipment.count() == 1:
-                                return active_shipment[0]
-                            if active_shipment.count() == 0:
-                                active_shipment = Shipment.objects.create(\
-                                    destination=facility, status='T')
-                                return active_shipment
-
                         if facility is not None:
-                            active_shipment = get_active_shipment(facility)
+                            active_shipment = Facility.get_active_shipment(facility)
 
                             if active_shipment is not None:
                                 # create a new Cargo object

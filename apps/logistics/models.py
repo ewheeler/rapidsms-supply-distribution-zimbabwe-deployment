@@ -98,6 +98,29 @@ class Facility(FacilityBase):
     class Meta:
         verbose_name_plural = "facilities"
 
+    @classmethod
+    def get_active_shipment(klass, destination):
+        ''' Returns a single Shipment (not a queryset)
+            destined for the supplied facility '''
+        # exclude delivered shipments
+        active_shipment = Shipment.objects.filter(\
+            destination=destination).order_by('created').exclude(status='D')
+        # if there is only one planned or in-transit, return it
+        if active_shipment.count() == 1:
+            return active_shipment[0]
+        # if there are no planned or in-transit,
+        # make a new one and return it with in-transit status
+        if active_shipment.count() == 0:
+            active_shipment = Shipment.objects.create(\
+                destination=destination, status='T')
+            return active_shipment
+        # if there are many active shipments, return the oldest in-transit shipment
+        if active_shipment.count() > 1:
+            in_transit = active_shipment.filter(status='T').order_by('created')
+            if in_transit.count() > 0:
+                return in_transit[0]
+            return active_shipment[0]
+
 class ShipmentBase(models.Model):
     STATUS_CHOICES = (
         ('P', 'Planned shipment'),
