@@ -95,6 +95,9 @@ class Facility(FacilityBase):
     def __unicode__(self):
         return getattr(self.location, "name")
 
+    class Meta:
+        verbose_name_plural = "facilities"
+
 class ShipmentBase(models.Model):
     STATUS_CHOICES = (
         ('P', 'Planned shipment'),
@@ -104,8 +107,8 @@ class ShipmentBase(models.Model):
     status = models.CharField(max_length=3, choices=STATUS_CHOICES)
     cargos = models.ManyToManyField(Cargo)
 
-    origin = models.ForeignKey(Facility, related_name='origin', blank=True, null=True)
-    destination = models.ForeignKey(Facility, related_name='destination')
+    origin = models.ForeignKey(Facility, related_name='originshipments', blank=True, null=True)
+    destination = models.ForeignKey(Facility, related_name='destinationshipments')
 
     created = models.DateTimeField(default=datetime.datetime.utcnow)
     modified = models.DateTimeField(default=datetime.datetime.utcnow)
