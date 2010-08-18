@@ -140,7 +140,7 @@ class School(Location):
 
 
     @classmethod
-    def closest_by_name(klass, search_string, n=100):
+    def closest_by_spelling(klass, search_string, n=100):
         d = []
 
         for obj in klass.objects.all():

@@ -64,7 +64,7 @@ class IdentifyHandler(KeywordHandler):
             self.debug(tokens)
 
             if not tokens['surname'].isdigit():
-                possible_contacts_by_name = Contact.closest_by_name(tokens['surname'])
+                possible_contacts_by_name = Contact.closest_by_spelling(tokens['surname'])
                 if len(possible_contacts_by_name) == 1:
                     known_contact = possible_contacts_by_name[0][1]
                     self.msg.connection.contact = known_contact
@@ -85,7 +85,7 @@ class IdentifyHandler(KeywordHandler):
                         fac_by_code = possible_fac_by_code[0][1]
 
             if not tokens['facility_name'].isdigit():
-                possible_fac_by_name = School.closest_by_name(tokens['facility_name'])
+                possible_fac_by_name = School.closest_by_spelling(tokens['facility_name'])
                 self.debug("%s possible facilities by name" % (str(len(possible_fac_by_name))))
                 if len(possible_fac_by_name) == 1:
                     if possible_fac_by_name[0][2] == 0 and possible_fac_by_name[0][3] == 0 and possible_fac_by_name[0][4] == 1.0:
