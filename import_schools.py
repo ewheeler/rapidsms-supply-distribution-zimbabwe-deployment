@@ -33,6 +33,7 @@ from edusupply.models import Country
 from logistics.models import Commodity
 from logistics.models import Cargo
 from logistics.models import Shipment
+from logistics.models import Facility
 
 def import_csv(args):
 
@@ -216,9 +217,13 @@ def import_csv(args):
                                     continue
 
                                 try:
+                                    origin, o_created = Facility.objects.get_or_create(location_id=country.pk,\
+                                        location_type=ContentType.objects.get(model='country'))
+                                    destination, d_created = Facility.objects.get_or_create(location_id=school.pk,\
+                                        location_type=ContentType.objects.get(model='school'))
                                     shipment = Shipment.objects.create(status='P',\
-                                       origin=country,\
-                                       destination=school)
+                                       origin=origin,\
+                                       destination=destination)
                                     shipment.cargos.add(cargo)
 
                                 except Exception, e:

@@ -3,11 +3,11 @@
 import datetime
 
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
 
 from rapidsms.models import ExtensibleModelBase
 from rapidsms.models import Contact
-from edusupply.models import School
-from edusupply.models import Country
 
 class CommodityBase(models.Model):
     ''' Stuff '''
@@ -82,6 +82,19 @@ class Cargo(CargoBase):
     ''' An amount of stuff being transported '''
     __metaclass__ = ExtensibleModelBase
 
+class FacilityBase(models.Model):
+    ''' Generic relationship to an instance of a subclass of Location '''
+    location_type = models.ForeignKey(ContentType)
+    location_id = models.PositiveIntegerField()
+    location = generic.GenericForeignKey('location_type', 'location_id')
+
+class Facility(FacilityBase):
+    ''' A Location where stuff can be stored or seen '''
+    __metaclass__ = ExtensibleModelBase
+
+    def __unicode__(self):
+        return getattr(self.location, "name")
+
 class ShipmentBase(models.Model):
     STATUS_CHOICES = (
         ('P', 'Planned shipment'),
@@ -91,8 +104,8 @@ class ShipmentBase(models.Model):
     status = models.CharField(max_length=3, choices=STATUS_CHOICES)
     cargos = models.ManyToManyField(Cargo)
 
-    origin = models.ForeignKey(Country, related_name='origin', blank=True, null=True)
-    destination = models.ForeignKey(School, related_name='destination')
+    origin = models.ForeignKey(Facility, related_name='origin', blank=True, null=True)
+    destination = models.ForeignKey(Facility, related_name='destination')
 
     created = models.DateTimeField(default=datetime.datetime.utcnow)
     modified = models.DateTimeField(default=datetime.datetime.utcnow)
@@ -126,7 +139,7 @@ class ShipmentBase(models.Model):
     def delivery_sighting(self):
         for route in self.shipmentroute_set.all():
             for sighting in route.sightings.all():
-                if sighting.location.pk == self.destination.pk:
+                if sighting.facility.pk == self.destination.pk:
                     return sighting
         return ""
 
@@ -140,7 +153,7 @@ class Shipment(ShipmentBase):
 
 class ShipmentSightingBase(models.Model):
     updated = models.DateTimeField(default=datetime.datetime.utcnow)
-    location = models.ForeignKey(School)
+    facility = models.ForeignKey(Facility)
     observed_cargo = models.ForeignKey(Cargo, blank=True, null=True)
     seen_by = models.ForeignKey(Contact)
 
@@ -148,7 +161,7 @@ class ShipmentSightingBase(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return "%s seen by %s at %s" % (self.observed_cargo, self.seen_by.name, self.location.name)
+        return "%s seen by %s at %s" % (self.observed_cargo, self.seen_by.name, self.facility.name)
 
 class ShipmentSighting(ShipmentSightingBase):
     ''' Location where a person has seen stuff during its shipment '''

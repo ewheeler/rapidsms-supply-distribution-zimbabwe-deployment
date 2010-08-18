@@ -11,14 +11,23 @@ class Country(Location):
     class Meta:
         verbose_name_plural = "countries"
 
+    def __unicode__(self):
+        return self.name
+
 class Province(Location):
     name = models.CharField(max_length=200, blank=True, null=True)
     slug = models.CharField(max_length=100, blank=True, null=True)
+
+    def __unicode__(self):
+        return self.name
 
 class District(Location):
     name = models.CharField(max_length=200, blank=True, null=True)
     slug = models.CharField(max_length=100, blank=True, null=True)
     code = models.PositiveIntegerField(max_length=20, blank=True, null=True)
+
+    def __unicode__(self):
+        return self.name
 
 class School(Location):
     name = models.CharField(max_length=200, blank=True, null=True)
@@ -28,6 +37,9 @@ class School(Location):
     km_to_DEO = models.CharField(max_length=160, blank=True, null=True)
     code = models.PositiveIntegerField(max_length=20, blank=True, null=True)
     satellite_number = models.PositiveIntegerField(max_length=20, blank=True, null=True)
+
+    def __unicode__(self):
+        return self.name
     
     @property
     def full_code(self):

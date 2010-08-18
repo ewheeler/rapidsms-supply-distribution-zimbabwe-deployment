@@ -17,8 +17,8 @@ class ShipmentAdmin(admin.ModelAdmin):
     date_hierarchy = "shipping_time"
 
 class ShipmentSightingAdmin(admin.ModelAdmin):
-    list_display = ("observed_cargo", "location", "seen_by", "updated")
-    search_fields = ("observed_cargo", "location", "seen_by", "updated")
+    list_display = ("observed_cargo", "facility", "seen_by", "updated")
+    search_fields = ("observed_cargo", "facility", "seen_by", "updated")
     date_hierarchy = "updated"
 
 admin.site.register(Commodity, CommodityAdmin)
