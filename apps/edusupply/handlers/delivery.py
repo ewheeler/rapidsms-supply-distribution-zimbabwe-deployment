@@ -5,10 +5,12 @@ import datetime
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.models import Max
+from django.contrib.contenttypes.models import ContentType
 
 from rapidsms.contrib.handlers.handlers.keyword import KeywordHandler
 from rapidsms.models import Contact
 from edusupply.models import School
+from logistics.models import Facility
 
 import utils
 
@@ -208,7 +210,7 @@ class DeliveryHandler(KeywordHandler):
                                 sighting = ShipmentSighting.objects.create(\
                                     observed_cargo=observed_cargo,\
                                     seen_by=known_contact,\
-                                    location=facility)
+                                    facility=facility)
 
                                 # associate new Cargo with Shipment
                                 active_shipment.status = 'D'
@@ -226,7 +228,7 @@ class DeliveryHandler(KeywordHandler):
                             data = [
                                     "%s pallets"        % (observed_cargo.quantity or "??"),
                                     "of %s"             % (commodity.slug or "??"),
-                                    "to %s"             % (facility.name or "??"),
+                                    "to %s"             % (facility.location.name or "??"),
                                     "in %s condition"   % (observed_cargo.get_condition_display() or "??")
                             ]
                             confirmation = "Thanks %s. Confirmed delivery of %s." %\
