@@ -126,9 +126,9 @@ class ShipmentBase(models.Model):
 
     def __unicode__(self):
         if self.origin is not None:
-            return "%s from %s to %s" % (self.cargos_str, self.origin.name, self.destination.name)
+            return "%s from %s to %s" % (self.cargos_str, self.origin.location.name, self.destination.location.name)
         else:
-            return "%s from ?? to %s" % (self.cargos_str, self.destination.name)
+            return "%s from ?? to %s" % (self.cargos_str, self.destination.location.name)
 
     @property
     def cargos_str(self):
@@ -142,7 +142,7 @@ class ShipmentBase(models.Model):
     def delivery_sighting(self):
         for route in self.shipmentroute_set.all():
             for sighting in route.sightings.all():
-                if sighting.facility.pk == self.destination.pk:
+                if sighting.facility.location_id == self.destination.location_id:
                     return sighting
         return ""
 
@@ -164,7 +164,7 @@ class ShipmentSightingBase(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return "%s seen by %s at %s" % (self.observed_cargo, self.seen_by.name, self.facility.name)
+        return "%s seen by %s at %s" % (self.observed_cargo, self.seen_by.name, self.facility.location.name)
 
 class ShipmentSighting(ShipmentSightingBase):
     ''' Location where a person has seen stuff during its shipment '''

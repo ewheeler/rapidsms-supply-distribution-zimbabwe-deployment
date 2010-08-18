@@ -5,7 +5,19 @@
 from django.contrib import admin
 from .models import *
 
-admin.site.register(School)
-admin.site.register(District)
-admin.site.register(Province)
+class SchoolAdmin(admin.ModelAdmin):
+    list_display = ("name", "full_code", "district", "province", "contact", "contact_phone", "km_to_DEO")
+    search_fields = ("name", "slug", "full_code", "district", "province", "code", "address", "km_to_DEO", "contact", "contact_phone")
+
+class DistrictAdmin(admin.ModelAdmin):
+    list_display = ("name", "code", "province")
+    search_fields = ("name", "slug", "code", "province")
+
+class ProvinceAdmin(admin.ModelAdmin):
+    list_display = ("name", "country")
+    search_fields = ("name", "slug", "country")
+
+admin.site.register(School, SchoolAdmin)
+admin.site.register(District, DistrictAdmin)
+admin.site.register(Province, ProvinceAdmin)
 admin.site.register(Country)

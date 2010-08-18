@@ -21,6 +21,13 @@ class Province(Location):
     def __unicode__(self):
         return self.name
 
+    @property
+    def country(self):
+        if self.parent is not None:
+            if self.parent.name is not None:
+                return self.parent.name
+        return ""
+
 class District(Location):
     name = models.CharField(max_length=200, blank=True, null=True)
     slug = models.CharField(max_length=100, blank=True, null=True)
@@ -28,6 +35,13 @@ class District(Location):
 
     def __unicode__(self):
         return self.name
+
+    @property
+    def province(self):
+        if self.parent is not None:
+            if self.parent.name is not None:
+                return self.parent.name
+        return ""
 
 class School(Location):
     name = models.CharField(max_length=200, blank=True, null=True)
@@ -41,6 +55,21 @@ class School(Location):
     def __unicode__(self):
         return self.name
     
+    @property
+    def district(self):
+        if self.parent is not None:
+            if self.parent.name is not None:
+                return self.parent.name
+        return ""
+
+    @property
+    def province(self):
+        if self.parent.name is not None:
+            if self.parent.parent is not None:
+                if self.parent.parent.name is not None:
+                    return self.parent.parent.name
+        return ""
+
     @property
     def full_code(self):
         return "%s" % (str(self.code) + str(self.satellite_number))
