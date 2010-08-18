@@ -1,21 +1,35 @@
-This is an example of a RapidSMS project, as it might be deployed
-in-country. When development settles down a bit, the rapidsms package
-can be bundled into a deb, rpm, .tar.gz (or whatever), and installed
-into site-packages. For now, it is a submodule.
+This is a RapidSMS project, as it will be deployed in Zimbabwe.
 
-The RapidSMS repo also contains submodules of its own, so don't forget
-to `git submodule init` and `git submodule update` those, too.
+Provides functionality for tracking the logistics of an
+educational supply distribution campaign.
+
+NOTABLE CONTENTS
+- Logistics app
+    Provides extensible models for keeping track of stuff moving from place to place
+
+- Extensions to rapidsms.models.Contact to allow phonetic searching
+
+- Utilities for string matching / spell checking
+
+- Experimental tokenizer
 
 DEPENDENCIES
+- RapidSMS
+    see http://docs.rapidsms.org/Installation
 
-# copy and paste this into a file called dameraulevenshtein.py in your
-# site-packages or dist-packages
-http://mwh.geek.nz/2009/04/26/python-damerau-levenshtein-distance/
+- Damerau-Levenshtein Distance algorithm
+    copy and paste this code into a file called dameraulevenshtein.py in your site-packages or dist-packages
+    http://mwh.geek.nz/2009/04/26/python-damerau-levenshtein-distance/
 
-# clone and symlink metaphone.py in your site-packages or dist-packages
-http://github.com/dracos/double-metaphone
+- Double Metaphone algorithm
+    clone and symlink metaphone.py in your site-packages or dist-packages
+    http://github.com/dracos/double-metaphone
 
-# to install the c versions of these libraries, you need a c compiler and pythonheaders
-# on debian/ubuntu: sudo apt-get install build-essential python-dev
-http://code.google.com/p/pylevenshtein/
-http://bitpim.svn.sourceforge.net/viewvc/bitpim/trunk/bitpim/src/native/strings/
+Note: the following two libraries require a c compliler and python headers
+    on debian/ubuntu, sudo apt-get install build-essential python-dev
+
+- Jaro-Winkler Distance algorithm
+    http://bitpim.svn.sourceforge.net/viewvc/bitpim/trunk/bitpim/src/native/strings/?view=tar
+
+- Levenshtein Distance algorithm
+    http://code.google.com/p/pylevenshtein/
