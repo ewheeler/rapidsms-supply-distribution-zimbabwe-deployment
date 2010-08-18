@@ -29,10 +29,10 @@
                 {# XXX many of these are specific to edusupply's app's extension of cargo #}
                 <td>{{ship.cargos_str}}</td>
                 <td>{{ship.destination}}</td>
-                <td>{{ship.destination.full_code}}</td>
-                <td>{{ship.destination.contact}}</td>
-                <td>{{ship.destination.contact_phone}}</td>
-                <td>{{ship.destination.contact_alt_phone}}</td>
+                <td>{{ship.destination.location.full_code}}</td>
+                <td>{{ship.destination.location.contact}}</td>
+                <td>{{ship.destination.location.contact_phone}}</td>
+                <td>{{ship.destination.location.contact_alt_phone}}</td>
                 <td>{{ship.get_status_display}}</td>
                 <td>{{ship.shipping_time|date:"d-M-Y H:m:s"}}</td>
                 <td>{{ship.actual_delivery_time|date:"d-M-Y H:m:s"}}</td>
