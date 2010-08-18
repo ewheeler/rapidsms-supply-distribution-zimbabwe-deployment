@@ -45,9 +45,12 @@ class School(Location):
     def full_code(self):
         return "%s" % (str(self.code) + str(self.satellite_number))
 
+    def _contacts(self):
+        return self.schoolcontact.all()
+
     @property
     def contact(self):
-        contacts = self.facilitycontact.all()
+        contacts = self._contacts()
         if contacts.count() == 1:
             return contacts[0]
         if contacts.count() == 0:
@@ -57,7 +60,7 @@ class School(Location):
 
     @property
     def contact_phone(self):
-        contacts = self.facilitycontact.all()
+        contacts = self._contacts()
         if contacts.count() == 1:
             connections = contacts[0].connection_set.all()
             if connections.count() == 1:
@@ -75,7 +78,7 @@ class School(Location):
 
     @property
     def contact_alt_phone(self):
-        contacts = self.facilitycontact.all()
+        contacts = self._contacts()
         if contacts.count() == 1:
             if contacts[0].alternate_phone is not None:
                 return contacts[0].alternate_phone
