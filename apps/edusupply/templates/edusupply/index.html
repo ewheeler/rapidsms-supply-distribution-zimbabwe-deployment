@@ -1,0 +1,16 @@
+{% extends "layout-split-2.html" %}
+    {% block stylesheets %}
+    {{ block.super }}
+    <link type="text/css" rel="stylesheet" href="/static/edusupply/stylesheets/dashboard.css" />
+    {% endblock %}
+    {% block title %}Dashboard{% endblock %}
+
+    {% load edusupply-tags %}
+
+    {% block left %}
+        {% fake_progress %}
+    {% endblock %}
+
+    {% block right %}
+        {% stats %}
+    {% endblock %}

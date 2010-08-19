@@ -1,0 +1,189 @@
+/* temporary dashboard stuff */
+
+tr.caption td {
+	padding: 0;
+}
+
+
+/* line-up numbers along their
+ * least-significant digit */
+td.num {
+	text-align: right; }
+
+td.shrink {
+        font-size: 75%;
+}
+
+/* make most columns as small as possible,
+ * allowing a single column to occupy the
+ * rest. otherwise, the browser will guess */
+.min {
+	white-space: nowrap;
+	width: 1%;
+}
+
+/* space out sections via
+ * their h3 ub-header */
+thead:first-child h3 { margin-top: 0; }
+h3 { margin-top: 1em; }
+
+ul {
+	padding: 0;
+}
+
+
+/* table summaries are like little
+ * footers. not using tfoot, since
+ * this is... a hack */
+tr.summary { }
+
+	tr.summary td {
+		background: #eee url("../images/table-footer-bg.png") repeat-x 0 100%;
+		padding: 0.625em;
+		font-size: 80%;
+		text-align: center;
+		color: #aaa;
+	}
+
+
+	#inner div.split-3 .left {
+		width: 37%;
+	}
+	
+	#inner div.split-3 .mid {
+		width: 43%;
+	}
+	
+	#inner div.split-3 .right {
+		background: #ffe;
+		width: 20%;
+	}
+	
+	.recent-reporters li {
+		border: 1px solid #aaa;
+		background: #f8f8f8;
+		line-height: 1.4;
+		display: block;
+		padding: 1em;
+		margin: 0 0 1em 0;
+	}
+	
+		.recent-reporters li > div {
+			padding-bottom: 0.25em;
+			font-weight: bold;
+		}
+
+		.recent-reporters li > span {
+			display: block;
+			font-size: 90%;
+			color: #aaa;
+		}
+
+
+.progress { }
+
+	.progress table {
+		width: 100%; }
+	
+	.progress .future {
+		color: #eee;
+	}
+	
+	.progress td.day {
+		padding-right: 2em; }
+	
+	.progress td.perc {
+		padding-right: 2em;
+		color: #aaa; }
+	
+	.progress td.perc:last-child {
+		padding-right: 1em; }
+
+
+.stats { }
+
+	.stats li {
+			display: block;
+			text-align: center;
+			margin-top: 2em;
+	}
+
+		.stats li:first-child {
+			margin-top: 0; }
+
+		.stats li div {
+			font-size: 400%;
+			font-weight: bold;
+		}
+
+
+.pilot,
+.logistics {
+	margin-top: 2em !important;
+}
+
+.pilot .scroller,
+.logistics .scroller {
+	overflow-y: scroll;
+	padding-right: 0.5em;
+	height: 60em;
+}
+
+	.pilot table,
+	.logistics table {
+		width: 100%;
+	}
+	
+		.progress .totals {
+			background: #ffc;
+			font-weight: bold;
+		}
+		.pilot .totals {
+			background: #ffc;
+			font-weight: bold;
+		}
+
+                .pilot tr.warning td{
+                        color: white;
+                        background: #f99;
+                        border-top: 1px solid red;
+                        border-bottom: 1px solid red;
+                }
+
+		/* space out the columns a
+		 * bit more than usual */
+		.logistics tbody td:last-child { padding-right: 0.5em; }
+		.logistics tbody td { padding-right: 2em; }
+	
+                /* style LGAs without shipments differently */
+                .logistics tr.warning td h3{
+                        color: white;
+                        background: #f99; 
+                        height: 1em;
+                        border-top: 1px solid red;
+                        border-bottom: 1px solid red;
+                        text-align: center;
+                }
+                .logistics tr.warning td h3 div{
+                        float: left;
+                }
+                .logistics tr.warning td h3 span{
+                        float: left;
+                }
+                .logistics tr.warning td h3 em{
+                        float:right;
+                        font-size:80%;
+                        color: #302010;
+                }
+
+		/* shipping icons */
+		.logistics td.dir-R { background: url("../icons/silk/package_add.png") no-repeat 50% 50%; }
+		.logistics td.dir-I { background: url("../icons/silk/package_go.png")  no-repeat 50% 50%; }
+
+			/* hide the text label of the
+			 * transaction (it has a tip) */
+			.logistics td.dir-R span,
+			.logistics td.dir-I span {
+				text-indent: -9999px;
+				display: block;
+			}
