@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from django import template
 register = template.Library()
 from django.db.models import Avg
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from logistics.models import *
 
@@ -37,7 +38,6 @@ def stats():
         }
     ]}
 
-@register.inclusion_tag("edusupply/partials/progress.html")
 def fake_progress():
     return {
         "days" : range(11),
@@ -49,21 +49,23 @@ def fake_progress():
         "total_suspects": 100,
     }
 
+@register.inclusion_tag("edusupply/partials/progress.html")
 def progress():
     def unique_list(seq):
         set = {}
         map(set.__setitem__, seq, [])
         return set.keys()
     try:
-        survey = Survey.objects.get(begin_date__lte=datetime.datetime.now().date(),\
+        campaign = Campaign.objects.get(begin_date__lte=datetime.datetime.now().date(),\
             end_date__gte=datetime.datetime.now().date())
 
     except ObjectDoesNotExist, MultipleObjectsReturned:
-        survey = Survey.objects.filter(end_date__lte=datetime.datetime.now()\
+        campaign = Campaign.objects.filter(end_date__lte=datetime.datetime.now()\
                     .date()).order_by('begin_date')[0]
-    start = survey.begin_date
-    end = survey.end_date
+    start = campaign.begin_date
+    end = campaign.end_date
     days = []
+    # TODO refactor all of this!!!
     for d in range(0, (end - start).days):
         date = start + datetime.timedelta(d)
         
@@ -80,39 +82,42 @@ def progress():
         }
         
         if not data["in_future"]:
-            healthworkers_today = SurveyEntry.objects.filter(survey_date__year=date.\
-                    year, survey_date__month=date.month, survey_date__day=\
-                    date.day).values_list('healthworker_id', flat=True)
-            unique_healthworkers_today = unique_list(healthworkers_today)
+            shipments_today = Shipment.objects.filter(actual_delivery_time__year=date.\
+                    year, actual_delivery_time__month=date.month, actual_delivery_time__day=\
+                    date.day)
+            unique_shipments_today = unique_list(shipments_today)
+
+            delivered_shipments_with_damaged_cargo = []
+            delivered_shipments_to_alt_loc = []
+
+            for shipment in shipments_today:
+                for cargo in shipment.cargos.all():
+                    if cargo.condition == 'D':
+                        delivered_shipments_with_damaged_cargo.append(cargo)
+                    if cargo.condition == 'L':
+                        delivered_shipments_to_alt_loc.append(cargo)
+                        
             data.update({
-                "children": Patient.objects.filter(created_at__year=date.year,\
-                    created_at__month=date.month, created_at__day=date.day\
-                    ).count(),
-                "healthworkers": len(unique_healthworkers_today),
-                "surveys": SurveyEntry.objects.filter(survey_date__year=date.\
-                    year, survey_date__month=date.month, survey_date__day=\
-                    date.day).count(),
-                "valids": Assessment.objects.filter(**ass_args).count(),
-                "goods": Assessment.objects.filter(**ass_args).filter(\
-                    status='G').count(),
-                "suspects": Assessment.objects.filter(**ass_args).filter(\
-                    status='S').count()
+                "planned": Shipment.objects.filter(status='P').count(),
+                "in_transit": Shipment.objects.filter(status='T').count(),
+                "delivered": shipments_today.filter(status='D').count(),
+                "damaged": len(delivered_shipments_with_damaged_cargo),
+                "alternate_loc": len(delivered_shipments_to_alt_loc),
             })
         
             data.update({
-                "valid_perc":    int((float(data["valids"])    / float(data["surveys"]))    * 100.0) if (data["valids"]    > 0) else 0,
-                "good_perc":    int((float(data["goods"])    / float(data["surveys"]))    * 100.0) if (data["goods"]    > 0) else 0,
-                "suspect_perc":    int((float(data["suspects"])    / float(data["surveys"]))    * 100.0) if (data["suspects"]    > 0) else 0,
+                "damaged_perc":    int((float(data["damaged"])    / float(data["delivered"]))    * 100.0) if (data["damaged"]    > 0) else 0,
+                "alt_loc_perc":    int((float(data["alternate_loc"])    / float(data["delivered"]))    * 100.0) if (data["alternate_loc"]    > 0) else 0,
             })
         days.append(data)
-    active_healthworkers = unique_list(SurveyEntry.objects.all().values_list(\
-        'healthworker_id', flat=True))
+    active_headmasters_or_deo = unique_list(ShipmentSighting.objects.all().values_list(\
+        'seen_by', flat=True))
     return {
         "days" : days,
-        "total_children" : Patient.objects.all().count(),
-        "active_healthworkers" : len(active_healthworkers),
-        "total_surveys": SurveyEntry.objects.all().count(),
-        "total_valids": Assessment.objects.all().count(),
-        "total_goods": Assessment.objects.all().filter(status='G').count(),
-        "total_suspects": Assessment.objects.all().filter(status='S').count()
+        "active_headmasters_or_deo" : len(active_headmasters_or_deo),
+        "total_planned" : Shipment.objects.filter(status='P').count(),
+        "total_in_transit" : Shipment.objects.filter(status='T').count(),
+        "total_delivered" : Shipment.objects.filter(status='D').count(),
+        "total_damaged": Cargo.objects.filter(condition='D').count(),
+        "total_alt_loc": Cargo.objects.filter(condition='L').count()
     }

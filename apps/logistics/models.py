@@ -5,6 +5,7 @@ import datetime
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from rapidsms.models import ExtensibleModelBase
 from rapidsms.models import Contact
@@ -205,4 +206,40 @@ class ShipmentRouteBase(models.Model):
 
 class ShipmentRoute(ShipmentRouteBase):
     ''' Collection of locations where the stuff has been seen during shipment '''
+    __metaclass__ = ExtensibleModelBase
+
+class CampaignBase(models.Model):
+    begin_date = models.DateField(blank=True,null=True)
+    end_date = models.DateField(blank=True,null=True)
+    facility = models.ForeignKey(Facility, blank=True, null=True, help_text="Optional top-level facility or campaign area.")
+    location = models.CharField(max_length=160,blank=True,null=True, help_text="Optional location notes.")
+    name = models.CharField(max_length=160,blank=True,null=True, help_text="Title of campaign, e.g., Textbooks for primary schools")
+    description = models.CharField(max_length=160,blank=True,null=True, help_text="Description of campaign")
+    commodities = models.ManyToManyField(Commodity, blank=True, null=True, help_text="Supplies to be distributed during campaign")
+    shipments = models.ManyToManyField(Shipment, blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def get_active_campaign(klass):
+        try:
+            active = klass.objects.get(begin_date__lte=datetime.datetime.now().date(),\
+                end_date__gte=datetime.datetime.now().date())
+            return active
+        # TODO better error handling!
+        except ObjectDoesNotExist:
+            return None
+        except MultipleObjectsReturned:
+            return False 
+
+    @property
+    def commodities_str(self):
+        commodities_str = [x.__unicode__() for x in self.commodities.all()]
+        return ','.join(commodities_str)
+
+    def __unicode__(self):
+        return "%s (%s to %s)" % (self.name, self.begin_date, self.end_date)
+
+class Campaign(CampaignBase):
     __metaclass__ = ExtensibleModelBase

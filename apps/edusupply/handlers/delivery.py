@@ -211,6 +211,11 @@ class DeliveryHandler(KeywordHandler):
                                 route.sightings.add(sighting)
                                 route.save()
 
+                                campaign = Campaign.get_active_campaign()
+                                if campaign is not None:
+                                    campaign.shipments.add(active_shipment)
+                                    campaign.save()
+
                             data = [
                                     "%s pallets"        % (observed_cargo.quantity or "??"),
                                     "of %s"             % (commodity.slug or "??"),
