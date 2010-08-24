@@ -12,9 +12,9 @@ class CargoAdmin(admin.ModelAdmin):
     list_filter = ("commodity", )
 
 class ShipmentAdmin(admin.ModelAdmin):
-    list_display = ("cargos_str", "origin", "destination", "status", "shipping_time", "actual_delivery_time")
+    list_display = ("cargos_str", "origin", "destination", "status", "dispatch_time", "actual_delivery_time")
     list_filter = ("status",)
-    date_hierarchy = "shipping_time"
+    date_hierarchy = "dispatch_time"
 
 class ShipmentSightingAdmin(admin.ModelAdmin):
     list_display = ("observed_cargo", "facility", "seen_by", "updated")

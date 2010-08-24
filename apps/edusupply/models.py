@@ -44,6 +44,11 @@ class District(Location):
         return ""
 
 class School(Location):
+    LEVEL_CHOICES = (
+        ('P', 'primary'),
+        ('S', 'secondary'),
+        ('U', 'unknown'),
+    )
     name = models.CharField(max_length=200, blank=True, null=True)
     slug = models.CharField(max_length=100, blank=True, null=True)
     code = models.PositiveIntegerField(max_length=20, blank=True, null=True)
@@ -51,6 +56,9 @@ class School(Location):
     km_to_DEO = models.CharField(max_length=160, blank=True, null=True)
     code = models.PositiveIntegerField(max_length=20, blank=True, null=True)
     satellite_number = models.PositiveIntegerField(max_length=20, blank=True, null=True)
+    total_enrollment = models.PositiveIntegerField(max_length=20, blank=True, null=True)
+    level = models.CharField(max_length=2, choices=LEVEL_CHOICES, default='U')
+    form_number = models.CharField(max_length=160, blank=True, null=True)
 
     def __unicode__(self):
         return self.name

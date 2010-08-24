@@ -28,11 +28,11 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +13 import_schools.py
-badd +1 apps/edusupply/models.py
+badd +104 import_schools.py
+badd +31 apps/edusupply/models.py
 badd +1 apps/edusupply/handlers/identify.py
 badd +183 apps/edusupply/handlers/delivery.py
-badd +4 apps/logistics/models.py
+badd +1 apps/logistics/models.py
 badd +1 utils.py
 badd +1 stringsplitter.py
 badd +35 ../core-dev-temp/lib/rapidsms/contrib/locations/models.py
@@ -40,12 +40,14 @@ badd +144 ../core-dev-temp/lib/rapidsms/contrib/locations/views.py
 badd +31 apps/edusupply/extensions/rapidsms/contact.py
 badd +11 apps/edusupply/admin.py
 badd +24 ../growthmonitoring-app/models.py
-badd +0 apps/logistics/admin.py
-badd +3 apps/edusupply/templatetags/edusupply-tags.py
-badd +0 apps/edusupply/templates/edusupply/partials/progress.html
-badd +0 apps/edusupply/extensions/logistics/cargo.py
+badd +1 apps/logistics/admin.py
+badd +1 apps/edusupply/templatetags/edusupply-tags.py
+badd +1 apps/edusupply/templates/edusupply/partials/progress.html
+badd +9 apps/edusupply/extensions/logistics/cargo.py
 badd +11 apps/edusupply/templates/edusupply/index.html
 badd +10 ../growthmonitoring-app/app.py
+badd +0 apps/edusupply/extensions/logistics/shipment.py
+badd +496 ../pygrowup/pygrowup/pygrowup.py
 args import_schools.py
 edit import_schools.py
 set splitbelow splitright
@@ -150,12 +152,12 @@ set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 199 - ((0 * winheight(0) + 16) / 33)
+let s:l = 366 - ((0 * winheight(0) + 16) / 33)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-199
-normal! 047l
+366
+normal! 036l
 wincmd w
 argglobal
 edit apps/edusupply/models.py
@@ -249,27 +251,34 @@ set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 31 - ((28 * winheight(0) + 16) / 33)
+let s:l = 61 - ((21 * winheight(0) + 16) / 33)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-31
-normal! 04l
+61
+normal! 072l
 wincmd w
 exe 'vert 1resize ' . ((&columns * 78 + 78) / 156)
 exe 'vert 2resize ' . ((&columns * 77 + 78) / 156)
-tabedit apps/edusupply/extensions/logistics/cargo.py
+tabedit apps/edusupply/extensions/logistics/shipment.py
 set splitbelow splitright
 wincmd _ | wincmd |
 vsplit
 1wincmd h
+wincmd _ | wincmd |
+split
+1wincmd k
+wincmd w
 wincmd w
 set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
+exe '1resize ' . ((&lines * 16 + 18) / 36)
 exe 'vert 1resize ' . ((&columns * 78 + 78) / 156)
-exe 'vert 2resize ' . ((&columns * 77 + 78) / 156)
+exe '2resize ' . ((&lines * 16 + 18) / 36)
+exe 'vert 2resize ' . ((&columns * 78 + 78) / 156)
+exe 'vert 3resize ' . ((&columns * 77 + 78) / 156)
 argglobal
 setlocal autoindent
 setlocal nobinary
@@ -361,11 +370,110 @@ set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 9 - ((8 * winheight(0) + 16) / 33)
+let s:l = 7 - ((6 * winheight(0) + 8) / 16)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-9
+7
+normal! 048l
+wincmd w
+argglobal
+edit apps/edusupply/extensions/logistics/cargo.py
+setlocal autoindent
+setlocal nobinary
+setlocal bufhidden=
+setlocal buflisted
+setlocal buftype=
+setlocal nocindent
+setlocal cinkeys=0{,0},0),:,0#,!^F,o,O,e
+setlocal cinoptions=
+setlocal cinwords=if,else,while,do,for,switch
+setlocal comments=s1:/*,mb:*,ex:*/,://,b:#,:%,:XCOMM,n:>,fb:-
+setlocal commentstring=/*%s*/
+setlocal complete=.,w,b,u,t,i
+setlocal completefunc=
+setlocal nocopyindent
+setlocal nocursorcolumn
+setlocal nocursorline
+setlocal define=
+setlocal dictionary=
+setlocal nodiff
+setlocal equalprg=
+setlocal errorformat=
+setlocal expandtab
+if &filetype != 'python'
+setlocal filetype=python
+endif
+setlocal foldcolumn=0
+setlocal foldenable
+setlocal foldexpr=0
+setlocal foldignore=#
+setlocal foldlevel=0
+setlocal foldmarker={{{,}}}
+setlocal foldmethod=manual
+setlocal foldminlines=1
+setlocal foldnestmax=20
+setlocal foldtext=foldtext()
+setlocal formatexpr=
+setlocal formatoptions=tcq
+setlocal formatlistpat=^\\s*\\d\\+[\\]:.)}\\t\ ]\\s*
+setlocal grepprg=
+setlocal iminsert=0
+setlocal imsearch=0
+setlocal include=
+setlocal includeexpr=
+setlocal indentexpr=
+setlocal indentkeys=0{,0},:,0#,!^F,o,O,e
+setlocal noinfercase
+setlocal iskeyword=@,48-57,_,192-255
+setlocal keywordprg=
+setlocal nolinebreak
+setlocal nolisp
+setlocal nolist
+setlocal makeprg=
+setlocal matchpairs=(:),{:},[:]
+setlocal modeline
+setlocal modifiable
+setlocal nrformats=octal,hex
+setlocal nonumber
+setlocal numberwidth=4
+setlocal omnifunc=
+setlocal path=
+setlocal nopreserveindent
+setlocal nopreviewwindow
+setlocal quoteescape=\\
+setlocal noreadonly
+setlocal noscrollbind
+setlocal shiftwidth=4
+setlocal noshortname
+setlocal nosmartindent
+setlocal softtabstop=4
+setlocal nospell
+setlocal spellcapcheck=[.?!]\\_[\\])'\"\	\ ]\\+
+setlocal spellfile=
+setlocal spelllang=en
+setlocal statusline=
+setlocal suffixesadd=
+setlocal swapfile
+setlocal synmaxcol=3000
+if &syntax != 'python'
+setlocal syntax=python
+endif
+setlocal tabstop=8
+setlocal tags=
+setlocal textwidth=0
+setlocal thesaurus=
+setlocal nowinfixheight
+setlocal nowinfixwidth
+set nowrap
+setlocal nowrap
+setlocal wrapmargin=0
+silent! normal! zE
+let s:l = 1 - ((0 * winheight(0) + 8) / 16)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+1
 normal! 0
 wincmd w
 argglobal
@@ -460,15 +568,18 @@ set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 20 - ((17 * winheight(0) + 16) / 33)
+let s:l = 18 - ((13 * winheight(0) + 16) / 33)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-20
-normal! 010l
+18
+normal! 0
 wincmd w
+exe '1resize ' . ((&lines * 16 + 18) / 36)
 exe 'vert 1resize ' . ((&columns * 78 + 78) / 156)
-exe 'vert 2resize ' . ((&columns * 77 + 78) / 156)
+exe '2resize ' . ((&lines * 16 + 18) / 36)
+exe 'vert 2resize ' . ((&columns * 78 + 78) / 156)
+exe 'vert 3resize ' . ((&columns * 77 + 78) / 156)
 tabedit apps/edusupply/handlers/delivery.py
 set splitbelow splitright
 set nosplitbelow
@@ -675,11 +786,11 @@ set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 240 - ((27 * winheight(0) + 16) / 33)
+let s:l = 148 - ((19 * winheight(0) + 16) / 33)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-240
+148
 normal! 0
 wincmd w
 argglobal
@@ -774,12 +885,12 @@ set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 27 - ((25 * winheight(0) + 16) / 33)
+let s:l = 18 - ((16 * winheight(0) + 16) / 33)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-27
-normal! 032l
+18
+normal! 0
 wincmd w
 exe 'vert 1resize ' . ((&columns * 78 + 78) / 156)
 exe 'vert 2resize ' . ((&columns * 77 + 78) / 156)
@@ -886,12 +997,12 @@ set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 54 - ((0 * winheight(0) + 16) / 33)
+let s:l = 6 - ((1 * winheight(0) + 16) / 33)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-54
-normal! 04l
+6
+normal! 0
 wincmd w
 argglobal
 edit apps/edusupply/templates/edusupply/partials/progress.html
@@ -994,7 +1105,7 @@ normal! 028l
 wincmd w
 exe 'vert 1resize ' . ((&columns * 78 + 78) / 156)
 exe 'vert 2resize ' . ((&columns * 77 + 78) / 156)
-tabnext 5
+tabnext 1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf
 endif

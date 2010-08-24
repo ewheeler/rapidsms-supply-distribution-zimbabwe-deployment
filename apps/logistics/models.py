@@ -22,6 +22,7 @@ class CommodityBase(models.Model):
         ('LT', 'Liters'),
         ('CN', 'Containers'),
         ('DS', 'Doses'),
+        ('KT', 'Kits'),
         ('OT', 'Other'),
         ('UK', 'Unknown'),
     )
@@ -138,7 +139,7 @@ class ShipmentBase(models.Model):
     modified = models.DateTimeField(default=datetime.datetime.utcnow)
 
     # datetime when transport begins
-    shipping_time = models.DateTimeField(blank=True, null=True)
+    dispatch_time = models.DateTimeField(blank=True, null=True)
     # estimated delivery datetime
     expected_delivery_time = models.DateTimeField(blank=True, null=True)
     # actual datetime of shipment delivery
