@@ -1,2 +1,6 @@
 *.pyc
 *.db
+*.swp
+*.sqlite3
+*.log*
+*.csv
