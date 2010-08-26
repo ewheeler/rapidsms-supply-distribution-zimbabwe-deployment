@@ -1,0 +1,11 @@
+/* vim:set et ts=4 sw=4 */
+
+div.label-wrapper.green div.label {
+    background: #00FF00;
+}
+div.label-wrapper.blue div.label {
+    background: #0000FF;
+}
+div.label-wrapper.yellow div.label {
+    background: #FFFF00;
+}

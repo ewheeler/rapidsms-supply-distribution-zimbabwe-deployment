@@ -110,11 +110,8 @@ def progress():
                 "alt_loc_perc":    int((float(data["alternate_loc"])    / float(data["delivered"]))    * 100.0) if (data["alternate_loc"]    > 0) else 0,
             })
         days.append(data)
-    active_headmasters_or_deo = unique_list(ShipmentSighting.objects.all().values_list(\
-        'seen_by', flat=True))
     return {
         "days" : days,
-        "active_headmasters_or_deo" : len(active_headmasters_or_deo),
         "total_planned" : Shipment.objects.filter(status='P').count(),
         "total_in_transit" : Shipment.objects.filter(status='T').count(),
         "total_delivered" : Shipment.objects.filter(status='D').count(),

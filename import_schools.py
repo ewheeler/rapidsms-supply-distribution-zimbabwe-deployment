@@ -40,7 +40,7 @@ def import_csv(args):
     # use codecs.open() instead of open() so all characters are utf-8 encoded
     # BEFORE we start dealing with them (just in case)
     # rU option is for universal-newline mode which takes care of \n or \r etc
-    csvee = codecs.open("all_schools_temp.csv", "rU", encoding='utf-8', errors='ignore')
+    csvee = codecs.open("all_schools.csv", "rU", encoding='utf-8', errors='ignore')
 
     # sniffer attempts to guess the file's dialect e.g., excel, etc
     #dialect = csv.Sniffer().sniff(csvee.read(1024))

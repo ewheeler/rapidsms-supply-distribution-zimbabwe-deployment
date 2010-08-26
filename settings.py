@@ -10,9 +10,16 @@
 # you should configure your database here before doing any real work.
 # see: http://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
+#    "default": {
+#        "ENGINE": "django.db.backends.sqlite3",
+#        "NAME": "rapidsms.sqlite3"
+#    },
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "rapidsms.sqlite3"
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "edusupply",
+        "USER": "unicef",
+        "PASSWORD": "m3p3m3p3",
+        "HOST": "localhost"
     }
 }
 
@@ -85,7 +92,7 @@ INSTALLED_APPS = [
 # this rapidsms-specific setting defines which views are linked by the
 # tabbed navigation. when adding an app to INSTALLED_APPS, you may wish
 # to add it here, also, to expose it in the rapidsms ui.
-TABS = [
+RAPIDSMS_TABS = [
     ("edusupply.views.index",                            "Dashboard"),
     ("rapidsms.contrib.messagelog.views.message_log",       "Message Log"),
     #("rapidsms.contrib.registration.views.registration",    "Registration"),

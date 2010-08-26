@@ -4,6 +4,7 @@
 from django.db import models
 from rapidsms.contrib.locations.models import Location
 import utils
+from logistics.models import Facility
 
 class Country(Location):
     name = models.CharField(max_length=200, blank=True, null=True)
@@ -29,7 +30,7 @@ class Province(Location):
         return ""
 
 class District(Location):
-    name = models.CharField(max_length=200, blank=True, null=True)
+    name = models.CharField(max_length=500, blank=True, null=True)
     slug = models.CharField(max_length=100, blank=True, null=True)
     code = models.PositiveIntegerField(max_length=20, blank=True, null=True)
 
@@ -62,6 +63,30 @@ class School(Location):
 
     def __unicode__(self):
         return self.name
+
+    def as_html(self):
+        return "%s (%s)" % (self.name, self.full_code)
+
+    def active_shipment(self):
+        facility = Facility.objects.get(location_id=self.pk)
+        return Facility.get_active_shipment(facility)
+
+    @property
+    def css_class(self):
+        if self.active_shipment() is not None:
+            shipment = self.active_shipment()
+            if shipment.status == 'P':
+                return "bubble green"
+            if shipment.status == 'T':
+                return "bubble yellow"
+            if shipment.status == 'D':
+                return "bubble blue"
+        return "bubble"
+
+    @property
+    def direction(self):
+        return self.Direction.CENTER
+
     
     @property
     def district(self):

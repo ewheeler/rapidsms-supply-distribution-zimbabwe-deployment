@@ -8,7 +8,7 @@ from django.contrib.contenttypes import generic
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from rapidsms.models import ExtensibleModelBase
-from rapidsms.models import Contact
+#from rapidsms.models import Contact
 
 class CommodityBase(models.Model):
     ''' Stuff '''
@@ -183,7 +183,10 @@ class ShipmentSightingBase(models.Model):
     updated = models.DateTimeField(default=datetime.datetime.utcnow)
     facility = models.ForeignKey(Facility)
     observed_cargo = models.ForeignKey(Cargo, blank=True, null=True)
-    seen_by = models.ForeignKey(Contact)
+    #seen_by = models.ForeignKey(Contact)
+    @property
+    def seen_by(self):
+        return 'hehe'
 
     class Meta:
         abstract = True
