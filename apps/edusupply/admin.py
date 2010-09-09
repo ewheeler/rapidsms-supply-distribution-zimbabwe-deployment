@@ -7,15 +7,15 @@ from .models import *
 
 class SchoolAdmin(admin.ModelAdmin):
     list_display = ("name", "full_code", "district", "province", "contact", "contact_phone", "km_to_DEO")
-    search_fields = ("name", "slug", "full_code", "district", "province", "code", "address", "km_to_DEO", "contact", "contact_phone")
+    search_fields = ("name", "slug", "code", "address", "km_to_DEO")
 
 class DistrictAdmin(admin.ModelAdmin):
     list_display = ("name", "code", "province")
-    search_fields = ("name", "slug", "code", "province")
+    search_fields = ("name", "slug", "code")
 
 class ProvinceAdmin(admin.ModelAdmin):
     list_display = ("name", "country")
-    search_fields = ("name", "slug", "country")
+    search_fields = ("name", "slug")
 
 admin.site.register(School, SchoolAdmin)
 admin.site.register(District, DistrictAdmin)
