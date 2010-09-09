@@ -162,19 +162,24 @@ class DeliveryHandler(KeywordHandler):
                             location_type=ContentType.objects.get(model='school'))
 
                     except ObjectDoesNotExist:
-                        self.respond("Sorry, cannot find school with code '%s'" % (tokens['school_code']))
+                        try:
+                            school = School.objects.get(code=tokens['school_code'])
+                            facility, f_created = Facility.objects.get_or_create(location_id=school.pk,\
+                                location_type=ContentType.objects.get(model='school'))
+                        except ObjectDoesNotExist:
+                            self.respond("Sorry, cannot find school with code '%s'" % (tokens['school_code']))
 
-                        # maybe satellite number is omitted, so lookup schools by entire token
-                        suggestions = list_possible_schools_for_code(tokens['school_code'])
-                        if suggestions is not None:
-                            self.respond("Did you mean one of: %s?" %\
-                                (", ".join(suggestions)))
+                            # maybe satellite number is omitted, so lookup schools by entire token
+                            suggestions = list_possible_schools_for_code(tokens['school_code'])
+                            if suggestions is not None:
+                                self.respond("Did you mean one of: %s?" %\
+                                    (", ".join(suggestions)))
 
-                        # maybe satellite number is incorrect, so lookup schools only by school_code
-                        suggestions = list_possible_schools_for_code(school_num)
-                        if suggestions is not None:
-                            self.respond("Did you mean one of: %s?" %\
-                                (", ".join(suggestions)))
+                            # maybe satellite number is incorrect, so lookup schools only by school_code
+                            suggestions = list_possible_schools_for_code(school_num)
+                            if suggestions is not None:
+                                self.respond("Did you mean one of: %s?" %\
+                                    (", ".join(suggestions)))
 
 
                 else:
