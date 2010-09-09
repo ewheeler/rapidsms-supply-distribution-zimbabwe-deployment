@@ -105,7 +105,9 @@ class School(Location):
 
     @property
     def full_code(self):
-        return "%s" % (str(self.code) + str(self.satellite_number))
+        code = self.code if self.code is not None else ""
+        sat_num = self.satellite_number if self.satellite_number is not None else ""
+        return "%s" % (str(code) + str(sat_num))
 
     def _contacts(self):
         return self.schoolcontact.all()
