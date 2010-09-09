@@ -18,12 +18,10 @@ class ShipmentAdmin(admin.ModelAdmin):
 
 class ShipmentSightingAdmin(admin.ModelAdmin):
     list_display = ("observed_cargo", "facility", "seen_by", "updated")
-    search_fields = ("observed_cargo", "facility", "seen_by", "updated")
     date_hierarchy = "updated"
 
 class CampaignAdmin(admin.ModelAdmin):
     list_display = ("name", "begin_date", "end_date", "facility", "location", "commodities_str")
-    search_fields = ("name", "begin_date", "end_date", "facility", "location", "description", "commodities_str")
     date_hierarchy = "begin_date"
 
 admin.site.register(Commodity, CommodityAdmin)
