@@ -22,7 +22,7 @@ from logistics.models import ShipmentSighting
 from logistics.models import ShipmentRoute
 
 
-class DeliveryHandler(KeywordHandler):
+class ConfirmationHandler(KeywordHandler):
     """
     """
 
