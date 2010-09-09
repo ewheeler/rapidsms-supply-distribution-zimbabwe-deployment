@@ -183,16 +183,16 @@ class ShipmentSightingBase(models.Model):
     updated = models.DateTimeField(default=datetime.datetime.utcnow)
     facility = models.ForeignKey(Facility)
     observed_cargo = models.ForeignKey(Cargo, blank=True, null=True)
-    #seen_by = models.ForeignKey(Contact)
+    #seen_by = models.ForeignKey(Contact, blank=True, null=True)
     @property
     def seen_by(self):
-        return 'hehe'
+        return ''
 
     class Meta:
         abstract = True
 
     def __unicode__(self):
-        return "%s seen by %s at %s" % (self.observed_cargo, self.seen_by.name, self.facility.location.name)
+        return "%s seen at %s" % (self.observed_cargo, self.facility.location.name)
 
 class ShipmentSighting(ShipmentSightingBase):
     ''' Location where a person has seen stuff during its shipment '''
