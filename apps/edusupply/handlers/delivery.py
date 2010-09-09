@@ -10,10 +10,11 @@ from django.contrib.contenttypes.models import ContentType
 from rapidsms.contrib.handlers.handlers.keyword import KeywordHandler
 from rapidsms.models import Contact
 from edusupply.models import School
-from logistics.models import Facility
 
 import utils
 
+from logistics.models import Facility
+from logistics.models import Campaign
 from logistics.models import Commodity
 from logistics.models import Cargo
 from logistics.models import Shipment
@@ -81,7 +82,10 @@ class DeliveryHandler(KeywordHandler):
                     self.debug('MULTIPLE IDENTITIES AFTER UNKNOWN')
                     pass
                 except ObjectDoesNotExist:
-                    self.respond("Sorry, I don't recognize your phone number. Please respond with your surname, facility (school or DEO) code, and facility name.")
+                    #self.respond("Sorry, I don't recognize your phone number. Please respond with your surname, facility (school or DEO) code, and facility name.")
+                    pass
+            finally:
+                known_contact = Contact.objects.create(phone=self.msg.connection.identity)
         else:
             self.debug('NO IDENTITY')
 
@@ -99,6 +103,7 @@ class DeliveryHandler(KeywordHandler):
                     try:
                         # lookup commodity by slug
                         com = Commodity.objects.get(slug__istartswith=tokens['commodity'])
+                        return com
                     except MultipleObjectsReturned:
                         #TODO do something here?
                         pass
@@ -117,7 +122,7 @@ class DeliveryHandler(KeywordHandler):
                 commodity = get_commodity(tokens['commodity'])
 
                 if commodity is None:
-                    self.respond("Sorry %s, no record of supply called '%s'" % (known_contact.name, tokens['commodity']))
+                    self.respond("Sorry, no supply called '%s'" % (tokens['commodity']))
                     self.respond("Approved supplies are %s" % ", ".join(Commodity.objects.values_list('slug', flat=True)))
 
 
@@ -131,11 +136,12 @@ class DeliveryHandler(KeywordHandler):
                         # format a list containing 
                         #     1) combined school code + satellite_number
                         #     2) school name in parentheses
-                        possible_school_list =\
-                            [str(s[0]) + str(s[1]) + " (" + s[2] + ")" for s in\
-                            possible_schools.values_list('code', 'satellite_number', 'name')]
 
-                        return possible_school_list
+                        clean_list = []
+                        for school in possible_schools:
+                            clean_list.append(school.full_code + " (" + school.name + ")")
+
+                        return clean_list
 
                 # school code should be between 1 and 5 digits,
                 # and satellite_number should be 1 digit.
@@ -156,7 +162,7 @@ class DeliveryHandler(KeywordHandler):
                             location_type=ContentType.objects.get(model='school'))
 
                     except ObjectDoesNotExist:
-                        self.respond("Sorry %s, no record of school with code '%s'" % (known_contact.name, tokens['school_code']))
+                        self.respond("Sorry, cannot find school with code '%s'" % (tokens['school_code']))
 
                         # maybe satellite number is omitted, so lookup schools by entire token
                         suggestions = list_possible_schools_for_code(tokens['school_code'])
@@ -195,7 +201,6 @@ class DeliveryHandler(KeywordHandler):
                                 # create a new ShipmentSighting
                                 sighting = ShipmentSighting.objects.create(\
                                     observed_cargo=observed_cargo,\
-                                    seen_by=known_contact,\
                                     facility=facility)
 
                                 # associate new Cargo with Shipment
@@ -222,8 +227,8 @@ class DeliveryHandler(KeywordHandler):
                                     "to %s"             % (facility.location.name or "??"),
                                     "in %s condition"   % (observed_cargo.get_condition_display() or "??")
                             ]
-                            confirmation = "Thanks %s. Confirmed delivery of %s." %\
-                                (known_contact.name, " ".join(data))
+                            confirmation = "Thanks. Confirmed delivery of %s." %\
+                                (" ".join(data))
 
                             self.respond(confirmation)
 
