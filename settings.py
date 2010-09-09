@@ -81,13 +81,14 @@ INSTALLED_APPS = [
     "rapidsms.contrib.messaging",
     #"rapidsms.contrib.registration",
     "rapidsms.contrib.scheduler",
-    "rapidsms.contrib.search",
     "rapidsms.contrib.echo",
 
     "edusupply",
     "logistics",
 ]
 
+MAP_DEFAULT_LATITUDE = -17.83281908905689
+MAP_DEFAULT_LONGITUDE = 31.05431062416951
 
 # this rapidsms-specific setting defines which views are linked by the
 # tabbed navigation. when adding an app to INSTALLED_APPS, you may wish
