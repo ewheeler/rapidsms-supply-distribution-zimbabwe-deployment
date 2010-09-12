@@ -16,7 +16,7 @@ DATABASES = {
 #    },
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "edusupply",
+        "NAME": "zimtextbooks",
         "USER": "unicef",
         "PASSWORD": "m3p3m3p3",
         "HOST": "localhost"
@@ -97,9 +97,9 @@ RAPIDSMS_TABS = [
     ("edusupply.views.index",                            "Dashboard"),
     ("rapidsms.contrib.messagelog.views.message_log",       "Message Log"),
     #("rapidsms.contrib.registration.views.registration",    "Registration"),
-    ("rapidsms.contrib.messaging.views.messaging",          "Messaging"),
+    #("rapidsms.contrib.messaging.views.messaging",          "Messaging"),
     ("rapidsms.contrib.locations.views.locations",          "Map"),
-    ("rapidsms.contrib.scheduler.views.index",              "Event Scheduler"),
+    #("rapidsms.contrib.scheduler.views.index",              "Event Scheduler"),
     ("rapidsms.contrib.httptester.views.generate_identity", "Message Tester"),
     ("logistics.views.index", "Shipments"),
 ]
