@@ -1,4 +1,7 @@
 /* temporary dashboard stuff */
+ul.provinces div{
+    padding-bottom: 1em;
+}
 
 tr.caption td {
 	padding: 0;
