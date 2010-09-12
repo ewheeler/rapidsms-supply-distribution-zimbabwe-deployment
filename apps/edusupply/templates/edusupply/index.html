@@ -3,12 +3,24 @@
     {{ block.super }}
     <link type="text/css" rel="stylesheet" href="/static/edusupply/stylesheets/dashboard.css" />
     {% endblock %}
+    {% block javascripts %}
+    {{ block.super }}
+        <script type="text/javascript" src="/static/edusupply/javascripts/jquery.sparkline.js" charset="utf-8"/>
+    {{ block.super }}
+        <script type="text/javascript" charset="utf-8">
+        $(function() {
+                $('.district').sparkline('html', {type: 'tristate', barWidth: 3} );
+            });
+
+        </script>
+    {% endblock %}
+
     {% block title %}Dashboard{% endblock %}
 
     {% load edusupply-tags %}
 
     {% block left %}
-        {% progress %}
+        {% charts %}
     {% endblock %}
 
     {% block right %}

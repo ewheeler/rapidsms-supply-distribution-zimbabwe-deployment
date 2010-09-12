@@ -1,0 +1,18 @@
+<div class="module progress">
+
+	<h2>Shipment Progress</h2>
+	<div class="toolbar"></div>
+        <div class="help">Review daily progress throughout the distribution campaign.</div>
+        <div id="holder"></div>
+        <ul class="provinces">
+        {% for k, v in provinces.items %}
+            <div id="{{k}}">
+            <h3>{{k}}</h3>
+            {% for district in v %}
+            <p>{{ district.name }}</p>
+            <span id="{{ district.name }}" class="district">{{ district.status }}</span>
+            {% endfor %}
+            </div>
+        {% endfor %}
+        </ul>
+</div>

@@ -6,8 +6,10 @@ from django import template
 register = template.Library()
 from django.db.models import Avg
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.contrib.contenttypes.models import ContentType
 
 from logistics.models import *
+from edusupply.models import *
 
 @register.inclusion_tag("edusupply/partials/stats.html")
 def stats():
@@ -35,8 +37,26 @@ def stats():
         {
             "caption": "Total Shipments Delivered to alternate location",
             "value":   Cargo.objects.filter(condition='L').count()
+        },
+        {
+            "caption": "Total Shipments with incomplete cargo",
+            "value":   Cargo.objects.filter(condition='I').count()
         }
     ]}
+
+@register.inclusion_tag("edusupply/partials/charts.html")
+def charts():
+    provinces = Province.objects.all()
+    dict = {}
+    for province in provinces:
+        try:
+            districts = District.objects.filter(parent_type=ContentType.objects.get(name="province"),\
+                parent_id=province.pk)
+        except Exception, e:
+            print e
+        dict.update({province.name: districts})
+
+    return {"provinces": dict }
 
 def fake_progress():
     return {
