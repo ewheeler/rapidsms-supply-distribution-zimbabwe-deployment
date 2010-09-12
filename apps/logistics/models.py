@@ -72,13 +72,13 @@ class Commodity(CommodityBase):
 
 class CargoBase(models.Model):
     commodity = models.ForeignKey(Commodity)
-    quantity = models.CharField(max_length=160)
+    quantity = models.CharField(max_length=160, blank=True, null=True)
 
     class Meta:
         abstract = True
 
     def __unicode__(self):
-        return "%s %s of %s" % (self.quantity, self.commodity.get_unit_display(), self.commodity.slug)
+        return "%s %s of %s" % (self.quantity or "??", self.commodity.get_unit_display(), self.commodity.slug)
 
 class Cargo(CargoBase):
     ''' An amount of stuff being transported '''
