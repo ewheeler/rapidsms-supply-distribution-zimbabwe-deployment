@@ -8,6 +8,7 @@ class CargoWithCondition(models.Model):
         ('G', 'Good'),
         ('D', 'Damaged'),
         ('L', 'Alternate delivery location'),
+        ('I', 'Incomplete'),
     )
     condition = models.CharField(max_length=3, choices=CONDITION_CHOICES, blank=True, null=True)
     
