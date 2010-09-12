@@ -30,6 +30,7 @@ from edusupply.models import District
 from edusupply.models import Province 
 from edusupply.models import Country 
 
+from logistics.models import Campaign
 from logistics.models import Commodity
 from logistics.models import Cargo
 from logistics.models import Shipment
@@ -61,6 +62,9 @@ def import_csv(args):
         #TODO calculate per-pallet weight
         commodity, c_created = Commodity.objects.get_or_create(name="Textbooks",\
             slug="textbooks", unit="KT", aliases="textbook,books,book")
+
+        campaign, created = Campaign.objects.get_or_create(name="Primary School Textbooks")
+        campaign.commodities.add(commodity)
 
         satellite_counter = 0
         school_counter = 0
@@ -372,86 +376,37 @@ def import_csv(args):
                                     print row_count
                                     continue
 
-                            if has_data(row, ['ROUND_I_Actual_kits']):
-                                try:
-                                    cargo = Cargo.objects.create(commodity=commodity,\
-                                                quantity=row['ROUND_I_Actual_kits'])
+                            try:
+                                cargo = Cargo.objects.create(commodity=commodity)
 
-                                except Exception, e:
-                                    print 'BANG cargo:'
-                                    print e
-                                    print row
-                                    print row_count
-                                    continue
+                            except Exception, e:
+                                print 'BANG cargo:'
+                                print e
+                                print row
+                                print row_count
+                                continue
 
-                                raw_delivery_date = row['ROUND_I_DATE_OF_DELIVERY']
-                                delivery_date_str = None
-                                if raw_delivery_date != "":
-                                    if only_digits(raw_delivery_date) is not None:
-                                        delivery_date_str, deliver_date_obj = get_good_date(only_digits(raw_delivery_date))
-                                clean_delivery_group = only_digits(row['ROUND_I_delivery_group'])
-                                comments = row['ROUND_I_Comments']
 
-                                raw_dispatched = row['ROUND_I_Dispatched']
-                                clean_dispatched = None
-                                if raw_dispatched.upper() in ['YES', 'Y']:
-                                    clean_dispatched = True
-                                if raw_dispatched.upper() in ['NO', 'N']:
-                                    clean_dispatched = False
+                            try:
+                                origin, o_created = Facility.objects.get_or_create(location_id=country.pk,\
+                                    location_type=ContentType.objects.get(model='country'))
+                                destination, d_created = Facility.objects.get_or_create(location_id=school.pk,\
+                                    location_type=ContentType.objects.get(model='school'))
 
-                                raw_delivered= row['ROUND_I_Delivered']
-                                clean_delivered = None
-                                if raw_delivered.upper() in ['YES', 'Y']:
-                                    clean_delivered = True
-                                if raw_delivered.upper() in ['NO', 'N']:
-                                    clean_delivered= False
+                                shipment = Shipment(status='P', origin=origin,\
+                                    destination=destination)
 
-                                raw_confirmed = row['ROUND_I_Confirmed']
-                                clean_confirmed = None
-                                if raw_confirmed.upper() in ['YES', 'Y']:
-                                    clean_confirmed = True
-                                elif raw_confirmed.upper() in ['NO', 'N']:
-                                    clean_confirmed = False
-                                else:
-                                    comments = comments + raw_confirmed
+                                shipment.save()
 
-                                try:
-                                    origin, o_created = Facility.objects.get_or_create(location_id=country.pk,\
-                                        location_type=ContentType.objects.get(model='country'))
-                                    destination, d_created = Facility.objects.get_or_create(location_id=school.pk,\
-                                        location_type=ContentType.objects.get(model='school'))
+                                shipment.cargos.add(cargo)
+                                campaign.shipments.add(shipment)
 
-                                    shipment = Shipment(status='P', origin=origin,\
-                                        destination=destination, delivered_by=row['ROUND_I_Delivered_by'],\
-                                        delivery_group=clean_delivery_group)
-
-                                    if clean_dispatched is not None:
-                                        shipment.dispatched = clean_dispatched
-                                        shipment.status = 'T'
-
-                                    if delivery_date_str is not None:
-                                        shipment.actual_delivery_time = delivery_date_str 
-                                        shipment.dispatched = True
-                                        shipment.delivered = True
-                                        shipment.status = 'D'
-
-                                    if clean_delivered is not None:
-                                        shipment.delivered = clean_delivered
-                                        shipment.status = 'D'
-
-                                    if comments != "":
-                                        shipment.comments = comments
-
-                                    shipment.save()
-
-                                    shipment.cargos.add(cargo)
-
-                                except Exception, e:
-                                    print 'BANG shipment:'
-                                    print e
-                                    print row
-                                    print row_count
-                                    continue
+                            except Exception, e:
+                                print 'BANG shipment:'
+                                print e
+                                print row
+                                print row_count
+                                continue
 
                 else:
                     print 'OOPS. MOVING ON'
