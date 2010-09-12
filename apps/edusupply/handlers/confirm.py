@@ -177,15 +177,6 @@ class ConfirmationHandler(KeywordHandler):
                                 commodity=commodity,\
                                 condition=conditions_map[tokens['condition']])
 
-                            if observed_cargo.condition is not None:
-                                this_school = School.objects.get(pk=facility.location_id)
-                                if observed_cargo.condition in ['D', 'L', 'I']:
-                                    this_school.status = -1
-                                elif observed_cargo.condition == 'G':
-                                    this_school.status = 1
-                                else:
-                                    this_school.status = 0
-
                             # create a new ShipmentSighting
                             sighting = ShipmentSighting.objects.create(\
                                 observed_cargo=observed_cargo,\
@@ -203,6 +194,19 @@ class ConfirmationHandler(KeywordHandler):
                                 shipment=active_shipment)
                             route.sightings.add(sighting)
                             route.save()
+
+                            if observed_cargo.condition is not None:
+                                this_school = School.objects.get(pk=facility.location_id)
+                                if observed_cargo.condition in ['D', 'L', 'I']:
+                                    this_school.status = -1
+                                elif observed_cargo.condition == 'G':
+                                    this_school.status = 1
+                                else:
+                                    this_school.status = 0
+                                this_school.save()
+                                this_district = this_school.parent
+                                # TODO optimize! this is too slow
+                                updated = this_district.spark
 
                             campaign = Campaign.get_active_campaign()
                             if campaign is not None:
