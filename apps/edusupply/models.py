@@ -148,9 +148,13 @@ class School(Location):
         return "%s (%s)" % (self.name, self.full_code)
 
     def active_shipment(self):
+        facility = self.facility()
+        return Facility.get_active_shipment(facility)
+
+    def facility(self):
         facility = Facility.objects.get(location_type=ContentType.objects.get(name='school'),\
             location_id=self.pk)
-        return Facility.get_active_shipment(facility)
+        return facility
 
     @property
     def css_class(self):
