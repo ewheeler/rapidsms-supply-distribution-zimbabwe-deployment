@@ -100,7 +100,7 @@ class District(Location):
                         school.status = 0
                     if shipment.status == 'D':
                         try:
-                            cargo = shipment.cargos[0]
+                            cargo = shipment.cargos.all()[0]
                             if cargo.condition == 'G':
                                 school.status = 1
                             if cargo.condition == 'D':
@@ -112,12 +112,11 @@ class District(Location):
                         except Exception, e:
                             print 'BANG spark cargo'
                             print e
-                            school.status = 2
-                    tristate.append(school.status)
+                    tristate.append(int(school.status))
             except Exception, e:
                 print 'BANG spark shipment'
                 print e
-                tristate.append(school.status)
+                tristate.append(int(school.status))
             school.save()
         self.status = tristate
         self.save()
