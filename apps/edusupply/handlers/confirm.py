@@ -26,7 +26,7 @@ class ConfirmationHandler(KeywordHandler):
     """
     """
 
-    keyword = "confirm|conferm|conf|confirmed"
+    keyword = "confirm|conferm|conf|confirmed|cnf"
 
     def help(self):
         self.respond("DON'T PANIC")
@@ -34,18 +34,17 @@ class ConfirmationHandler(KeywordHandler):
     def handle(self, text):
         # expected format:
         #
-        # confirm   books   gwaai     4   1
-        #    |         |       |     |   |
-        #    V         |       |     |   |
-        # handler      V       |     |   |
-        #           commodity  |     |   |
-        #                      V     |   |
-        #            school code     |   |
-        #                            |   |
-        #                            V   |
-        #                   # of units   |
-        #                                V
-        #                          condition code
+        # confirm   books   gwaai       1
+        #    |         |       |        |
+        #    V         |       |        |
+        # handler      V       |        |
+        #           commodity  |        |
+        #                      V        |
+        #            school code        |
+        #                               |
+        #                               |
+        #                               V
+        #                         condition code
 
         # declare variables intended for valid information 
         known_contact = None
@@ -91,8 +90,8 @@ class ConfirmationHandler(KeywordHandler):
         if known_contact is not None:
             self.debug('KNOWN PERSON')
 
-            expected_tokens = ['word', 'words', 'number', 'number']
-            token_labels = ['commodity', 'school_name', 'quantity', 'condition']
+            expected_tokens = ['word', 'words', 'number']
+            token_labels = ['commodity', 'school_name', 'condition']
             tokens = utils.split_into_tokens(expected_tokens, token_labels, text)
 
             self.debug(tokens)
@@ -165,54 +164,60 @@ class ConfirmationHandler(KeywordHandler):
                 #TODO acceptible values should be configurable
                 #if int(tokens['quantity']) in range(1,10):
                 #    if int(tokens['condition']) in range(1,4):
-                if tokens['quantity'].isdigit():
-                    if tokens['condition'].isdigit():
-                        # map expected condition tokens into choices for db
-                        conditions_map = {'1':'G', '2':'D', '3':'L'}
+                if tokens['condition'].isdigit():
+                    # map expected condition tokens into choices for db
+                    conditions_map = {'1':'G', '2':'D', '3':'L', '4':'I'}
 
-                        if facility is not None:
-                            active_shipment = Facility.get_active_shipment(facility)
+                    if facility is not None:
+                        active_shipment = Facility.get_active_shipment(facility)
 
-                            if active_shipment is not None:
-                                # create a new Cargo object
-                                observed_cargo = Cargo.objects.create(\
-                                    commodity=commodity,\
-                                    quantity=int(tokens['quantity']),\
-                                    condition=conditions_map[tokens['condition']])
+                        if active_shipment is not None:
+                            # create a new Cargo object
+                            observed_cargo = Cargo.objects.create(\
+                                commodity=commodity,\
+                                condition=conditions_map[tokens['condition']])
 
-                                # create a new ShipmentSighting
-                                sighting = ShipmentSighting.objects.create(\
-                                    observed_cargo=observed_cargo,\
-                                    facility=facility)
+                            if observed_cargo.condition is not None:
+                                this_school = School.objects.get(pk=facility.location_id)
+                                if observed_cargo.condition in ['D', 'L', 'I']:
+                                    this_school.status = -1
+                                elif observed_cargo.condition == 'G':
+                                    this_school.status = 1
+                                else:
+                                    this_school.status = 0
 
-                                # associate new Cargo with Shipment
-                                active_shipment.status = 'D'
-                                active_shipment.actual_delivery_time=datetime.datetime.now()
-                                active_shipment.cargos.add(observed_cargo)
-                                active_shipment.save()
+                            # create a new ShipmentSighting
+                            sighting = ShipmentSighting.objects.create(\
+                                observed_cargo=observed_cargo,\
+                                facility=facility)
 
-                                # get or create a ShipmentRoute and associate
-                                # with new ShipmentSighting
-                                route, new_route = ShipmentRoute.objects.get_or_create(\
-                                    shipment=active_shipment)
-                                route.sightings.add(sighting)
-                                route.save()
+                            # associate new Cargo with Shipment
+                            active_shipment.status = 'D'
+                            active_shipment.actual_delivery_time=datetime.datetime.now()
+                            active_shipment.cargos.add(observed_cargo)
+                            active_shipment.save()
 
-                                campaign = Campaign.get_active_campaign()
-                                if campaign is not None:
-                                    campaign.shipments.add(active_shipment)
-                                    campaign.save()
+                            # get or create a ShipmentRoute and associate
+                            # with new ShipmentSighting
+                            route, new_route = ShipmentRoute.objects.get_or_create(\
+                                shipment=active_shipment)
+                            route.sightings.add(sighting)
+                            route.save()
 
-                            data = [
-                                    "%s pallets"        % (observed_cargo.quantity or "??"),
-                                    "of %s"             % (commodity.slug or "??"),
-                                    "to %s"             % (facility.location.name or "??"),
-                                    "in %s condition"   % (observed_cargo.get_condition_display() or "??")
-                            ]
-                            confirmation = "Thanks. Confirmed delivery of %s." %\
-                                (" ".join(data))
+                            campaign = Campaign.get_active_campaign()
+                            if campaign is not None:
+                                campaign.shipments.add(active_shipment)
+                                campaign.save()
 
-                            self.respond(confirmation)
+                        data = [
+                                "of %s"             % (commodity.slug or "??"),
+                                "to %s"             % (facility.location.name or "??"),
+                                "in %s condition"   % (observed_cargo.get_condition_display() or "??")
+                        ]
+                        confirmation = "Thanks. Confirmed delivery of %s." %\
+                            (" ".join(data))
+
+                        self.respond(confirmation)
 
 
         #self.respond("WORD UP!")
