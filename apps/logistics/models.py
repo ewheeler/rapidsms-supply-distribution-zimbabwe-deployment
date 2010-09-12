@@ -104,9 +104,8 @@ class Facility(FacilityBase):
     def get_active_shipment(klass, destination):
         ''' Returns a single Shipment (not a queryset)
             destined for the supplied facility '''
-        # exclude delivered shipments
         active_shipment = Shipment.objects.filter(\
-            destination=destination).order_by('created').exclude(status='D')
+            destination=destination).order_by('created')
         # if there is only one planned or in-transit, return it
         if active_shipment.count() == 1:
             return active_shipment[0]
