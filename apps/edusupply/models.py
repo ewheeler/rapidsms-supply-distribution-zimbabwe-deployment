@@ -2,6 +2,7 @@
 # vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
 
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
 from rapidsms.contrib.locations.models import Location
 import utils
 from logistics.models import Facility
@@ -34,6 +35,8 @@ class District(Location):
     slug = models.CharField(max_length=100, blank=True, null=True)
     code = models.PositiveIntegerField(max_length=20, blank=True, null=True)
 
+    status = models.TextField(blank=True, null=True)
+
     def __unicode__(self):
         return self.name
 
@@ -43,6 +46,82 @@ class District(Location):
             if self.parent.name is not None:
                 return self.parent.name
         return ""
+
+    @property
+    def totals(self):
+        schools = School.objects.filter(parent_type__name=self.name)
+        planned = 0
+        in_transit = 0
+        delivered = 0
+        good = 0
+        damaged = 0
+        alt_loc = 0
+        incomp = 0
+        for school in schools:
+            if school.active_shipment() is not None:
+                shipment = school.active_shipment()
+                if shipment.status == 'P':
+                    planned += 1
+                if shipment.status == 'T':
+                    in_transit += 1
+                if shipment.status == 'D':
+                    delivered += 1
+                    cargo = shipment.cargos[0]
+                    if cargo.condition == 'G':
+                        good += 1
+                    if cargo.condition == 'D':
+                        damaged += 1
+                    if cargo.condition == 'L':
+                        alt_loc += 1
+                    if cargo.condition == 'I':
+                        incomp += 1
+#        return {"planned": planned, "in_transit": in_transit,\
+#            "delivered": delivered, "good": good, "damaged": damaged,\
+#            "alt_loc": alt_loc, "incomp": incomp}
+        return { "shipments": [planned, in_transit, delivered],\
+                "cargos": [good, damaged, alt_loc, incomp]}
+
+    @property
+    def spark(self):
+        try:
+            schools = School.objects.filter(parent_type=ContentType.objects.get(name="district"),\
+                parent_id=self.pk)
+        except Exception, e:
+            print 'BANG spark'
+            print e
+        tristate = []
+        for school in schools:
+            try:
+                if school.active_shipment() is not None:
+                    shipment = school.active_shipment()
+                    if shipment.status == 'P':
+                        school.status = 0
+                    if shipment.status == 'T':
+                        school.status = 0
+                    if shipment.status == 'D':
+                        try:
+                            cargo = shipment.cargos[0]
+                            if cargo.condition == 'G':
+                                school.status = 1
+                            if cargo.condition == 'D':
+                                school.status = -1
+                            if cargo.condition == 'L':
+                                school.status = -1
+                            if cargo.condition == 'I':
+                                school.status = -1
+                        except Exception, e:
+                            print 'BANG spark cargo'
+                            print e
+                            school.status = 2
+                    tristate.append(school.status)
+            except Exception, e:
+                print 'BANG spark shipment'
+                print e
+                tristate.append(school.status)
+            school.save()
+        self.status = tristate
+        self.save()
+        return tristate
 
 class School(Location):
     LEVEL_CHOICES = (
@@ -61,6 +140,8 @@ class School(Location):
     level = models.CharField(max_length=2, choices=LEVEL_CHOICES, default='U')
     form_number = models.CharField(max_length=160, blank=True, null=True)
 
+    status = models.IntegerField(max_length=8, blank=True, null=True, default=0)
+
     def __unicode__(self):
         return self.name
 
@@ -68,7 +149,8 @@ class School(Location):
         return "%s (%s)" % (self.name, self.full_code)
 
     def active_shipment(self):
-        facility = Facility.objects.get(location_id=self.pk)
+        facility = Facility.objects.get(location_type=ContentType.objects.get(name='school'),\
+            location_id=self.pk)
         return Facility.get_active_shipment(facility)
 
     @property
