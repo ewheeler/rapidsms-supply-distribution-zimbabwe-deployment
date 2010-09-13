@@ -9,8 +9,8 @@
     {{ block.super }}
         <script type="text/javascript" charset="utf-8">
         $(function() {
-                $('.district').sparkline('html', {type: 'tristate', barWidth: 3} );
-                $('.legend').sparkline('html', {type: 'tristate', barWidth: 3} );
+                $('.district').sparkline('html', {type: 'tristate', barWidth: 3, colorMap:{'-2': '#f00' , '-3': '#fd0', '-4': '#f70'}} );
+                $('.legend').sparkline('html', {type: 'tristate', barWidth: 3, colorMap:{'-2': '#f00' , '-3': '#fd0', '-4': '#f70'}} );
             });
 
         </script>
