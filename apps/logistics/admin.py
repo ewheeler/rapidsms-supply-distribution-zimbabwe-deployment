@@ -9,6 +9,8 @@ class CommodityAdmin(admin.ModelAdmin):
     list_display = ("name", "aliases", "unit", "volume", "weight")
 
 class CargoAdmin(admin.ModelAdmin):
+    # TODO condition is specific to edusupply's extension
+    list_display = ("commodity", "quantity", "condition")
     list_filter = ("commodity", )
 
 class ShipmentAdmin(admin.ModelAdmin):
