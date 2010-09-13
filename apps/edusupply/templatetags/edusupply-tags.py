@@ -50,7 +50,7 @@ def charts():
                 parent_id=province.pk)
         except Exception, e:
             print e
-        dict.update({province.name: districts})
+        dict.update({province: districts})
 
     return {"provinces": dict }
 
