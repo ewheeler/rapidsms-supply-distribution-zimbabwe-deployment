@@ -14,17 +14,18 @@ class CommodityBase(models.Model):
     ''' Stuff '''
     UNIT_CHOICES = (
         ('PL', 'pallets'),
-        ('TM', 'Tons (metric)'),
-        ('KG', 'Kilograms'),
-        ('BX', 'Boxes'),
-        ('TB', 'Tiny boxes'),
-        ('BL', 'Bales'),
-        ('LT', 'Liters'),
-        ('CN', 'Containers'),
-        ('DS', 'Doses'),
-        ('KT', 'Kits'),
-        ('OT', 'Other'),
-        ('UK', 'Unknown'),
+        ('TM', 'tons (metric)'),
+        ('KG', 'kilograms'),
+        ('BX', 'boxes'),
+        ('TB', 'tiny boxes'),
+        ('BL', 'bales'),
+        ('LT', 'liters'),
+        ('CN', 'containers'),
+        ('DS', 'doses'),
+        ('KT', 'kits'),
+        ('UN', 'units'),
+        ('OT', 'other'),
+        ('UK', 'unknown'),
     )
     name = models.CharField(max_length=160)
     slug = models.CharField(max_length=20, unique=True)
@@ -104,7 +105,6 @@ class Facility(FacilityBase):
     def get_active_shipment(klass, destination):
         ''' Returns a single Shipment (not a queryset)
             destined for the supplied facility '''
-        # TODO BUGS BELOW! XXX
         active_shipment = Shipment.objects.filter(\
             destination=destination).order_by('created')
         # if there is only one planned or in-transit, return it
@@ -113,6 +113,8 @@ class Facility(FacilityBase):
         # if there are no planned or in-transit,
         # make a new one and return it with in-transit status
         if active_shipment.count() == 0:
+            print 'NO ACTIVE SHIPMENT FOUND'
+            print 'CREATING A NEW ONE'
             active_shipment = Shipment.objects.create(\
                 destination=destination, status='T')
             return active_shipment
