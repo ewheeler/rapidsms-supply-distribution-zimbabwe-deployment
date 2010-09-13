@@ -89,7 +89,10 @@ class District(Location):
         except Exception, e:
             print 'BANG spark'
             print e
-        tristate = []
+        # TODO fix this hack!
+        # first tick in chart doesn't seem to show up as
+        # pos or neg, so add an extra one at the beginning
+        tristate = [0]
         for school in schools:
             try:
                 if school.active_shipment() is not None:
