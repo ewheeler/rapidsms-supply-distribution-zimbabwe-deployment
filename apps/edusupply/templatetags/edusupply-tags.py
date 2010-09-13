@@ -23,10 +23,6 @@ def stats():
             "value":   Shipment.objects.filter(status='P').count()
         },
         {
-            "caption": "Total Shipments In-transit",
-            "value":   Shipment.objects.filter(status='T').count()
-        },
-        {
             "caption": "Total Shipments Delivered",
             "value":   Shipment.objects.filter(status='D').count()
         },
