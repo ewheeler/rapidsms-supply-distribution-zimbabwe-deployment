@@ -42,6 +42,16 @@ class District(Location):
         return self.name
 
     @property
+    def deo(self):
+        contacts = self.districtcontact.all()
+        if contacts.count() == 1:
+            return contacts[0]
+        if contacts.count() == 0:
+            return ""
+        if contacts.count() > 0:
+            return contacts[0]
+
+    @property
     def province(self):
         if self.parent is not None:
             if self.parent.name is not None:
@@ -200,6 +210,9 @@ class School(Location):
 
     @property
     def contact_phone(self):
+        seen_by = self.active_shipment().delivery_sighting.seen_by
+        if seen_by is not None:
+            return seen_by
         contacts = self._contacts()
         if contacts.count() == 1:
             connections = contacts[0].connection_set.all()

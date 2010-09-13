@@ -177,10 +177,12 @@ class ConfirmationHandler(KeywordHandler):
                                 commodity=commodity,\
                                 condition=conditions_map[tokens['condition']])
 
+                            seen_by_str = self.msg.connection.backend.name + ":" + self.msg.connection.identity
+
                             # create a new ShipmentSighting
                             sighting = ShipmentSighting.objects.create(\
                                 observed_cargo=observed_cargo,\
-                                facility=facility)
+                                facility=facility, seen_by=seen_by_str)
 
                             # associate new Cargo with Shipment
                             active_shipment.status = 'D'
@@ -197,10 +199,9 @@ class ConfirmationHandler(KeywordHandler):
 
                             if observed_cargo.condition is not None:
                                 this_school = School.objects.get(pk=facility.location_id)
-                                if observed_cargo.condition in ['D', 'L', 'I']:
-                                    this_school.status = -1
-                                elif observed_cargo.condition == 'G':
-                                    this_school.status = 1
+                                map = {'G':1, 'D':-2, 'L':-3, 'I':-4}
+                                if observed_cargo.condition in ['D', 'L', 'I', 'G']:
+                                    this_school.status = map[observed_cargo.condition]
                                 else:
                                     this_school.status = 0
                                 this_school.save()

@@ -8,7 +8,6 @@ from django.contrib.contenttypes import generic
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from rapidsms.models import ExtensibleModelBase
-#from rapidsms.models import Contact
 
 class CommodityBase(models.Model):
     ''' Stuff '''
@@ -106,7 +105,7 @@ class Facility(FacilityBase):
         ''' Returns a single Shipment (not a queryset)
             destined for the supplied facility '''
         active_shipment = Shipment.objects.filter(\
-            destination=destination).order_by('created')
+            destination=destination).order_by('-created')
         # if there is only one planned or in-transit, return it
         if active_shipment.count() == 1:
             return active_shipment[0]
@@ -186,9 +185,7 @@ class ShipmentSightingBase(models.Model):
     facility = models.ForeignKey(Facility)
     observed_cargo = models.ForeignKey(Cargo, blank=True, null=True)
     #seen_by = models.ForeignKey(Contact, blank=True, null=True)
-    @property
-    def seen_by(self):
-        return ''
+    seen_by = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
         abstract = True
