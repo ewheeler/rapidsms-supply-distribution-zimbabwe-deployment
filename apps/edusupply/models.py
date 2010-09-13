@@ -210,9 +210,10 @@ class School(Location):
 
     @property
     def contact_phone(self):
-        seen_by = self.active_shipment().delivery_sighting.seen_by
-        if seen_by is not None:
-            return seen_by
+        if self.active_shipment().delivery_sighting != "":
+            seen_by = self.active_shipment().delivery_sighting.seen_by
+            if seen_by is not None:
+                return seen_by
         contacts = self._contacts()
         if contacts.count() == 1:
             connections = contacts[0].connection_set.all()
