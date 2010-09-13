@@ -1,7 +1,35 @@
 /* temporary dashboard stuff */
-ul.provinces div{
+.provinces div{
     padding-bottom: 1em;
 }
+
+.districts tr.pending td{
+        color: #aaa;
+}
+
+.districts tr.good td{
+        background: #9f9;
+}
+
+.districts tr.warning td{
+        background: #f99;
+}
+
+#legend {
+    border: 1px solid red;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+    #legend p {
+        padding-left: 2em;
+        font-size: 80%;
+    }
+
+        #legend span {
+            padding-left: 2em;
+        }
+
 
 tr.caption td {
 	padding: 0;

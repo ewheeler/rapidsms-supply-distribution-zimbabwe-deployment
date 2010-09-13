@@ -3,8 +3,8 @@
 div.label-wrapper.green div.label {
     background: #00FF00;
 }
-div.label-wrapper.blue div.label {
-    background: #0000FF;
+div.label-wrapper.red div.label {
+    background: #FF0000;
 }
 div.label-wrapper.yellow div.label {
     background: #FFFF00;

@@ -1,0 +1,54 @@
+<div class="module progress">
+
+	<h2>Delivery Progress</h2>
+	<div class="toolbar"></div>
+        <div class="help">Review progress throughout the distribution campaign.</div>
+        {% if province %}
+            <div id="legend">
+                <p>Each mark represents one school:</p>
+                <p><span class="legend">0</span>&nbsp;&nbsp;Delivery pending confirmation<br/></p>
+                <p><span class="legend">1</span>&nbsp;&nbsp;Delivery confirmed in good condition<br/></p>
+                <p><span class="legend">-1</span>&nbsp;&nbsp;Delivery confirmed in damaged, alternate location, or incomplete condition<br/></p>
+            </div>
+            <div class="provinces">
+            {% for k, v in province.items %}
+                <div id="{{ k.name }}">
+                <h3>{{ k }}</h3>
+                {% for district in v %}
+                    <p><a href="{% url view-district k.pk district.pk %}">{{ district }}</a></p>
+                    <span id="{{ district.name }}" class="district">{{ district.status_for_spark }}</span>
+                {% endfor %}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+        {% if district %}
+            <div class="districts">
+            {% for k, v in district.items %}
+                <div id="{{ k.name }}">
+                <h3>{{ k }}</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>School</th>
+                                <th>Contact</th>
+                                <th>Contact phone</th>
+                                <th>Delivery status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for school in v %}
+                            <tr class="{{school.css_table_class}}">
+                                <td>{{school.name}}</td>
+                                <td>{{school.contact}}</td>
+                                <td>{{school.contact_phone}}</td>
+                                <td>{{school.status_for_detail}}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+</div>

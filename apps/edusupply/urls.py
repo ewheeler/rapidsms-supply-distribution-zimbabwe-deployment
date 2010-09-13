@@ -6,4 +6,10 @@ import views as views
 
 urlpatterns = patterns('',
     url(r'^$', views.index),
+    url(r'^province/(?P<province_pk>\d+)$', views.detail,
+        name="view-province"),
+    url(r'^province/(?P<province_pk>\d+)/district/(?P<district_pk>\d+)$',
+        views.detail,
+        name="view-district"),
+
 )

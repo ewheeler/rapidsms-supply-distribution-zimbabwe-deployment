@@ -1,18 +1,23 @@
 <div class="module progress">
 
-	<h2>Shipment Progress</h2>
+	<h2>Delivery Progress</h2>
 	<div class="toolbar"></div>
-        <div class="help">Review daily progress throughout the distribution campaign.</div>
-        <div id="holder"></div>
-        <ul class="provinces">
+        <div class="help">Review progress throughout the distribution campaign.</div>
+        <div id="legend">
+            <p>Each mark represents one school:</p>
+            <p><span class="legend">0</span>&nbsp;&nbsp;Delivery pending confirmation<br/></p>
+            <p><span class="legend">1</span>&nbsp;&nbsp;Delivery confirmed in good condition<br/></p>
+            <p><span class="legend">-1</span>&nbsp;&nbsp;Delivery confirmed in damaged, alternate location, or incomplete condition<br/></p>
+        </div>
+        <div class="provinces">
         {% for k, v in provinces.items %}
             <div id="{{k}}">
-            <h3>{{k}}</h3>
+            <h3><a href="{% url view-province k.pk %}">{{ k }}</a></h3>
             {% for district in v %}
-            <p>{{ district.name }}</p>
-            <span id="{{ district.name }}" class="district">{{ district.status }}</span>
+                <p><a href="{% url view-district k.pk district.pk %}">{{ district }}</a></p>
+                <span id="{{ district.name }}" class="district">{{ district.status_for_spark }}</span>
             {% endfor %}
             </div>
         {% endfor %}
-        </ul>
+        </div>
 </div>
