@@ -15,27 +15,27 @@ from edusupply.models import *
 def stats():
     return { "stats": [
         {
-            "caption": "Total Shipments",
+            "caption": "Total shipments",
             "value":   Shipment.objects.count()
         },
         {
-            "caption": "Total Planned Shipments",
+            "caption": "Total planned shipments",
             "value":   Shipment.objects.filter(status='P').count()
         },
         {
-            "caption": "Total Shipments Delivered",
+            "caption": "Total shipments delivered",
             "value":   Shipment.objects.filter(status='D').count()
         },
         {
-            "caption": "Total Shipments with damaged cargo",
+            "caption": "Total shipments with damaged cargo",
             "value":   Cargo.objects.filter(condition='D').count()
         },
         {
-            "caption": "Total Shipments Delivered to alternate location",
+            "caption": "Total shipments delivered to alternate location",
             "value":   Cargo.objects.filter(condition='L').count()
         },
         {
-            "caption": "Total Shipments with incomplete cargo",
+            "caption": "Total shipments with incomplete cargo",
             "value":   Cargo.objects.filter(condition='I').count()
         }
     ]}
