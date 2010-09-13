@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from rapidsms.contrib.locations.models import Location
 import utils
 from logistics.models import Facility
+from logistics.models import Cargo
 
 class Country(Location):
     name = models.CharField(max_length=200, blank=True, null=True)
@@ -48,51 +49,23 @@ class District(Location):
         return ""
 
     @property
-    def totals(self):
-        schools = School.objects.filter(parent_type__name=self.name)
-        planned = 0
-        in_transit = 0
-        delivered = 0
-        good = 0
-        damaged = 0
-        alt_loc = 0
-        incomp = 0
-        for school in schools:
-            if school.active_shipment() is not None:
-                shipment = school.active_shipment()
-                if shipment.status == 'P':
-                    planned += 1
-                if shipment.status == 'T':
-                    in_transit += 1
-                if shipment.status == 'D':
-                    delivered += 1
-                    cargo = shipment.cargos[0]
-                    if cargo.condition == 'G':
-                        good += 1
-                    if cargo.condition == 'D':
-                        damaged += 1
-                    if cargo.condition == 'L':
-                        alt_loc += 1
-                    if cargo.condition == 'I':
-                        incomp += 1
-#        return {"planned": planned, "in_transit": in_transit,\
-#            "delivered": delivered, "good": good, "damaged": damaged,\
-#            "alt_loc": alt_loc, "incomp": incomp}
-        return { "shipments": [planned, in_transit, delivered],\
-                "cargos": [good, damaged, alt_loc, incomp]}
+    def status_for_spark(self):
+        ''' Returns self.status sans brackets. Otherwise the first tick
+            of the sparkline will always be a 0. '''
+        return str(self.status).strip('[]')
 
     @property
     def spark(self):
+        ''' Returns a list of integers describing delivery status of
+            all of the schools in the district for use with
+            jquery.sparklines charts. '''
         try:
             schools = School.objects.filter(parent_type=ContentType.objects.get(name="district"),\
                 parent_id=self.pk)
         except Exception, e:
             print 'BANG spark'
             print e
-        # TODO fix this hack!
-        # first tick in chart doesn't seem to show up as
-        # pos or neg, so add an extra one at the beginning
-        tristate = [0]
+        tristate = []
         for school in schools:
             try:
                 if school.active_shipment() is not None:
@@ -107,11 +80,11 @@ class District(Location):
                             if cargo.condition == 'G':
                                 school.status = 1
                             if cargo.condition == 'D':
-                                school.status = -1
+                                school.status = -2
                             if cargo.condition == 'L':
-                                school.status = -1
+                                school.status = -3
                             if cargo.condition == 'I':
-                                school.status = -1
+                                school.status = -4
                         except Exception, e:
                             print 'BANG spark cargo'
                             print e
@@ -148,7 +121,7 @@ class School(Location):
         return self.name
 
     def as_html(self):
-        return "%s (%s)" % (self.name, self.full_code)
+        return "%s" % (self.name)
 
     def active_shipment(self):
         facility = self.facility()
@@ -160,22 +133,37 @@ class School(Location):
         return facility
 
     @property
+    def status_for_detail(self):
+        stat = self.status
+        if stat == 0:
+            return 'Pending'
+        else:
+            map = {1:0, -2:1, -3:2, -4:3}
+            return Cargo.CONDITION_CHOICES[map[stat]][1]
+
+    @property
+    def css_table_class(self):
+        if self.status == 0:
+            return 'pending'
+        elif self.status == 1:
+            return 'good'
+        else:
+            return 'warning'
+
+    @property
     def css_class(self):
-        if self.active_shipment() is not None:
-            shipment = self.active_shipment()
-            if shipment.status == 'P':
-                return "bubble green"
-            if shipment.status == 'T':
-                return "bubble yellow"
-            if shipment.status == 'D':
-                return "bubble blue"
-        return "bubble"
+        stat = self.status
+        if stat > 0:
+            return "bubble green"
+        elif stat < 0:
+            return "bubble red"
+        else:
+            return "bubble"
 
     @property
     def direction(self):
         return self.Direction.CENTER
 
-    
     @property
     def district(self):
         if self.parent is not None:
