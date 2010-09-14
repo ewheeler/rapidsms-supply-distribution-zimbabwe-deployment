@@ -34,25 +34,36 @@ class ConfirmationHandler(KeywordHandler):
     def handle(self, text):
         # expected format:
         #
-        # confirm   books   gwaai       1
-        #    |         |       |        |
-        #    V         |       |        |
-        # handler      V       |        |
-        #           commodity  |        |
-        #                      V        |
-        #            school code        |
-        #                               |
-        #                               |
-        #                               V
-        #                         condition code
+        # confirm   books   gwaai valley primary   4288    G
+        #    |         |            |               |      |
+        #    V         |            |               |      |
+        # handler      V            |               |      |
+        #           commodity       |               |      |
+        #                           V               |      |
+        #                      school name          |      |
+        #                                           |      |
+        #                                           |      |
+        #                                           V      |
+        #                                   school code    |
+        #                                                  |
+        #                                                  |
+        #                                                  V
+        #                                               status
 
         # declare variables intended for valid information 
         known_contact = None
         commodity = None
-        facility = None
         quantity = None
         condition = None
         observed_cargo = None
+
+        facility = None
+        school = None
+        possible_schools = []
+        possible_by_code = None
+        possible_by_name = None
+        school_by_code = None
+        school_by_name = None
 
         if self.msg.contact is not None:
             self.debug(self.msg.contact)
@@ -90,8 +101,8 @@ class ConfirmationHandler(KeywordHandler):
         if known_contact is not None:
             self.debug('KNOWN PERSON')
 
-            expected_tokens = ['word', 'words', 'number']
-            token_labels = ['commodity', 'school_name', 'condition']
+            expected_tokens = ['word', 'words', 'number', 'word']
+            token_labels = ['commodity', 'school_name', 'school_code', 'condition']
             tokens = utils.split_into_tokens(expected_tokens, token_labels, text)
 
             self.debug(tokens)
@@ -125,7 +136,6 @@ class ConfirmationHandler(KeywordHandler):
 
 
             if not tokens['school_name'].isdigit():
-                possible_school_names = []
                 try:
                     school = School.objects.get(name__istartswith=tokens['school_name'])
                     facility, f_created = Facility.objects.get_or_create(location_id=school.pk,\
@@ -134,48 +144,94 @@ class ConfirmationHandler(KeywordHandler):
                 except MultipleObjectsReturned:
                     schools = School.objects.filter(name__istartswith=tokens['school_name'])
                     for school in schools:
-                        possible_school_names.append(school.name)
+                        possible_schools.append(school)
                 except ObjectDoesNotExist:
 
-                    possible_fac_by_name = School.closest_by_spelling(tokens['school_name'])
-                    self.debug("%s possible facilities by name" % (str(len(possible_fac_by_name))))
-                    self.debug(possible_fac_by_name)
-                    if len(possible_fac_by_name) == 1:
-                        if possible_fac_by_name[0][2] == 0 and possible_fac_by_name[0][3] == 0 and possible_fac_by_name[0][4] == 1.0:
+                    possible_by_name = School.closest_by_spelling(tokens['school_name'])
+                    self.debug("%s possible facilities by name" % (str(len(possible_by_name))))
+                    self.debug(possible_by_name)
+                    if len(possible_by_name) == 1:
+                        if possible_by_name[0][2] == 0 and possible_by_name[0][3] == 0 and possible_by_name[0][4] == 1.0:
                             self.debug('PERFECT LOC MATCH BY NAME')
-                            fac_by_name = possible_fac_by_name[0][1]
+                            school_by_name = possible_by_name[0][1]
 
-                            school = fac_by_name
+                            school = school_by_name
                             facility, f_created = Facility.objects.get_or_create(location_id=school.pk,\
                                 location_type=ContentType.objects.get(model='school'))
 
                     else:
-                        if possible_fac_by_name is not None:
-                            for fac in possible_fac_by_name:
-                                possible_school_names.append(fac[1].name)
-                if facility is None:
-                    self.respond("Did you mean one of: %s?" %\
-                        (", ".join(possible_school_names)))
+                        if possible_by_name is not None:
+                            for fac in possible_by_name:
+                                possible_school.append(fac[1])
 
+                if tokens['school_code'].isdigit():
+                    possible_by_code = School.closest_by_code(tokens['school_code'])
+                    self.debug("%s possible facilities by code" % (str(len(possible_by_code))))
+                    if len(possible_by_code) == 1:
+                        if possible_by_code[0][2] == 0 and possible_by_code[0][3] == 0 and possible_by_code[0][4] == 1.0:
+                            self.debug('PERFECT LOC MATCH BY CODE')
+                            school_by_code = possible_by_code[0][1]
+
+                # see if either facility lookup returned a perfect match
+                if school_by_code or school_by_name is not None:
+                    if school_by_code and school_by_name is not None:
+                        # if they are both the same perfect match we have a winner
+                        if school_by_code.pk == school_by_name.pk:
+                            school = school_by_code
+                            facility, f_created = Facility.objects.get_or_create(location_id=school.pk,\
+                                location_type=ContentType.objects.get(model='school'))
+                        # if we have two different perfect matches, add to list
+                        else:
+                            possible_schools.append(school_by_code)
+                            self.debug("%s possible facilities" % (str(len(possible_schools))))
+                            possible_facilities.append(school_by_name)
+                            self.debug("%s possible facilities" % (str(len(possible_schools))))
+                    else:
+                        # perfect match by either is also considered a winner
+                        school = school_by_code if school_by_code is not None else school_by_name
+                        facility, f_created = Facility.objects.get_or_create(location_id=school.pk,\
+                            location_type=ContentType.objects.get(model='school'))
+                        self.debug(facility)
+
+            # neither lookup returned a perfect match
             else:
-                self.respond("Sorry I don't know '%s'" % (tokens['school_name']))
+                # make list of facility objects that are in both fac_by_code and fac_by_name
+                if possible_by_code and possible_by_name is not None:
+                    possible_schools.extend([l[1] for l in filter(lambda x:x in possible_by_code, possible_by_name)])
+                    self.debug("%s possible facilities by both" % (str(len(possible_schools))))
+
+                if len(possible_schools) == 0:
+                    possible_schools.extend([l[1] for l in possible_by_code if possible_by_code is not None])
+                    possible_schools.extend([l[1] for l in possible_by_name if possible_by_name is not None])
+                    self.debug("%s possible facilities by both" % (str(len(possible_schools))))
+
+                if len(possible_schools) == 1:
+                    school = possible_schools[0]
+                    facility, f_created = Facility.objects.get_or_create(location_id=school.pk,\
+                        location_type=ContentType.objects.get(model='school'))
+
+                if facility is None:
+                    self.respond("Sorry I don't know '%s'" % (tokens['school_name']))
+                    self.respond("Did you mean one of: %s?" %\
+                        (", ".join(possible_schools)))
 
             if facility is not None:
                 #TODO acceptible values should be configurable
                 #if int(tokens['quantity']) in range(1,10):
                 #    if int(tokens['condition']) in range(1,4):
-                if tokens['condition'].isdigit():
-                    # map expected condition tokens into choices for db
-                    conditions_map = {'1':'G', '2':'D', '3':'L', '4':'I'}
+                if not tokens['condition'].isdigit():
 
                     if facility is not None:
                         active_shipment = Facility.get_active_shipment(facility)
 
                         if active_shipment is not None:
                             # create a new Cargo object
-                            observed_cargo = Cargo.objects.create(\
-                                commodity=commodity,\
-                                condition=conditions_map[tokens['condition']])
+                            if tokens['condition'] in ['G', 'D', 'L', 'I']:
+                                observed_cargo = Cargo.objects.create(\
+                                    commodity=commodity,\
+                                    condition=tokens['condition'])
+                            else:
+                                self.respond("Oops. Status must be one of: G, D, L, or I")
 
                             seen_by_str = self.msg.connection.backend.name + ":" + self.msg.connection.identity
 
