@@ -16,7 +16,7 @@ DATABASES = {
 #    },
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "zimtextbooks",
+        "NAME": "zimfinal",
         "USER": "unicef",
         "PASSWORD": "m3p3m3p3",
         "HOST": "localhost"
