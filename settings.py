@@ -109,6 +109,7 @@ RAPIDSMS_TABS = [
 #                         BORING CONFIGURATION                         #
 # -------------------------------------------------------------------- #
 
+TIME_ZONE = 'Africa/Harare'
 
 # debug mode is turned on as default, since rapidsms is under heavy
 # development at the moment, and full stack traces are very useful
