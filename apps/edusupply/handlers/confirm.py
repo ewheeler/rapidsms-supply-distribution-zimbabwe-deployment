@@ -26,7 +26,7 @@ class ConfirmationHandler(KeywordHandler):
     """
     """
 
-    keyword = "confirm|conferm|conf|confirmed|cnf"
+    keyword = "confirm|conferm|conf|confirmed|cnf|comfirm|comf"
 
     def help(self):
         self.respond("DON'T PANIC")
