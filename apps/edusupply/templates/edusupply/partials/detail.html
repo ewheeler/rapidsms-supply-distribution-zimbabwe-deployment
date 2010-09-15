@@ -32,19 +32,8 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>DEO</th>
-                                <th>DEO phone</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>{{k.deo.name}}</td>
-                                <td>{{k.deo.phone}}</td>
-                            </tr>
-                        </tbody>
-                        <thead>
-                            <tr>
                                 <th>School</th>
+                                <th>School code</th>
                                 <th>Contact</th>
                                 <th>Contact phone</th>
                                 <th>Delivery status</th>
@@ -54,6 +43,7 @@
                         {% for school in v %}
                             <tr class="{{school.css_table_class}}">
                                 <td>{{school.name}}</td>
+                                <td>{{school.code}}</td>
                                 <td>{{school.contact}}</td>
                                 <td>{{school.contact_phone}}</td>
                                 <td>{{school.status_for_detail}}</td>
