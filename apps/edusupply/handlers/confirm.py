@@ -162,7 +162,7 @@ class ConfirmationHandler(KeywordHandler):
                     else:
                         if possible_by_name is not None:
                             for fac in possible_by_name:
-                                possible_school.append(fac[1])
+                                possible_schools.append(fac[1])
 
                 if tokens['school_code'].isdigit():
                     possible_by_code = School.closest_by_code(tokens['school_code'])
@@ -226,10 +226,11 @@ class ConfirmationHandler(KeywordHandler):
 
                         if active_shipment is not None:
                             # create a new Cargo object
-                            if tokens['condition'] in ['G', 'D', 'L', 'I']:
+                            condition = tokens['condition'].upper()
+                            if condition in ['G', 'D', 'L', 'I']:
                                 observed_cargo = Cargo.objects.create(\
                                     commodity=commodity,\
-                                    condition=tokens['condition'])
+                                    condition=condition)
                             else:
                                 self.respond("Oops. Status must be one of: G, D, L, or I")
 
