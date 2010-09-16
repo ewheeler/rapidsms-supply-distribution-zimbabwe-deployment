@@ -94,13 +94,14 @@ class ConfirmationHandler(KeywordHandler):
                     #self.respond("Sorry, I don't recognize your phone number. Please respond with your surname, facility (school or DEO) code, and facility name.")
                     pass
             finally:
-                known_contact = Contact.objects.create(phone=self.msg.connection.identity)
+                known_contact, new_contact = Contact.objects.get_or_create(phone=self.msg.connection.identity)
         else:
             self.debug('NO IDENTITY')
 
         if known_contact is not None:
             self.debug('KNOWN PERSON')
 
+            # lists of expected token types and their labels for split_into_tokens
             expected_tokens = ['word', 'words', 'number', 'word']
             token_labels = ['commodity', 'school_name', 'school_code', 'condition']
             tokens = utils.split_into_tokens(expected_tokens, token_labels, text)
@@ -137,16 +138,18 @@ class ConfirmationHandler(KeywordHandler):
 
             if not tokens['school_name'].isdigit():
                 try:
-                    school = School.objects.get(name__istartswith=tokens['school_name'])
+                    # first try to match name exactly
+                    school = School.objects.get(name__iexact=tokens['school_name'])
                     facility, f_created = Facility.objects.get_or_create(location_id=school.pk,\
                         location_type=ContentType.objects.get(model='school'))
 
                 except MultipleObjectsReturned:
+                    # if there are many exact matches, add them to the possible_schools list
                     schools = School.objects.filter(name__istartswith=tokens['school_name'])
                     for school in schools:
                         possible_schools.append(school)
                 except ObjectDoesNotExist:
-
+                    # try to match using string distance algorithms
                     possible_by_name = School.closest_by_spelling(tokens['school_name'])
                     self.debug("%s possible facilities by name" % (str(len(possible_by_name))))
                     self.debug(possible_by_name)
@@ -162,6 +165,7 @@ class ConfirmationHandler(KeywordHandler):
                     else:
                         if possible_by_name is not None:
                             for fac in possible_by_name:
+                                # add any non-perfect matches to possible_schools
                                 possible_schools.append(fac[1])
 
                 if tokens['school_code'].isdigit():
@@ -216,9 +220,6 @@ class ConfirmationHandler(KeywordHandler):
                         (", ".join(possible_schools)))
 
             if facility is not None:
-                #TODO acceptible values should be configurable
-                #if int(tokens['quantity']) in range(1,10):
-                #    if int(tokens['condition']) in range(1,4):
                 if not tokens['condition'].isdigit():
 
                     if facility is not None:
@@ -256,6 +257,8 @@ class ConfirmationHandler(KeywordHandler):
 
                             if observed_cargo.condition is not None:
                                 this_school = School.objects.get(pk=facility.location_id)
+                                # map reported condition to the status numbers
+                                # that the sparklines will use
                                 map = {'G':1, 'D':-2, 'L':-3, 'I':-4}
                                 if observed_cargo.condition in ['D', 'L', 'I', 'G']:
                                     this_school.status = map[observed_cargo.condition]
@@ -263,7 +266,10 @@ class ConfirmationHandler(KeywordHandler):
                                     this_school.status = 0
                                 this_school.save()
                                 this_district = this_school.parent
-                                # TODO optimize! this is too slow
+                                # TODO optimize! this is very expensive
+                                # and way too slow
+                                # re-generate the list of statuses that
+                                # the sparklines will use
                                 updated = this_district.spark
 
                             campaign = Campaign.get_active_campaign()

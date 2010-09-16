@@ -60,15 +60,17 @@ class District(Location):
 
     @property
     def status_for_spark(self):
-        ''' Returns self.status sans brackets. Otherwise the first tick
-            of the sparkline will always be a 0. '''
+        ''' Returns self.status sans brackets. Otherwise the first
+            and last ticks of the sparkline will always display 0. '''
         return str(self.status).strip('[]')
 
     @property
     def spark(self):
-        ''' Returns a list of integers describing delivery status of
+        ''' Refresh and return a list of integers describing delivery status of
             all of the schools in the district for use with
-            jquery.sparklines charts. '''
+            jquery.sparklines charts. This is very slow and expensive.
+            Use the status_for_spark property in templates -- this is only
+            for generating or refreshing the district level status list.'''
         try:
             schools = School.objects.filter(parent_type=ContentType.objects.get(name="district"),\
                 parent_id=self.pk)
@@ -80,6 +82,7 @@ class District(Location):
             try:
                 if school.active_shipment() is not None:
                     shipment = school.active_shipment()
+                    # no status for pending and in-transit shipments
                     if shipment.status == 'P':
                         school.status = 0
                     if shipment.status == 'T':
@@ -131,28 +134,39 @@ class School(Location):
         return self.name
 
     def as_html(self):
+        ''' Return label for map pins.
+            This can include html. '''
         return "%s" % (self.name)
 
     def active_shipment(self):
+        ''' Return a shipment destined to this school's
+            corresponding Facility object. '''
         facility = self.facility()
         return Facility.get_active_shipment(facility)
 
     def facility(self):
+        ''' Return corresponding Facility object '''
         facility = Facility.objects.get(location_type=ContentType.objects.get(name='school'),\
             location_id=self.pk)
         return facility
 
     @property
     def status_for_detail(self):
+        ''' Returns a textual status for the school.
+            This is displayed in table on the school detail partial template. '''
         stat = self.status
         if stat == 0:
             return 'Pending'
         else:
+            # map the status-for-sparkline onto cargo's condition tuple of tuples
             map = {1:0, -2:1, -3:2, -4:3}
             return Cargo.CONDITION_CHOICES[map[stat]][1]
 
     @property
     def css_table_class(self):
+        ''' Returns a simple status for the school.
+            This is used as a css class on the detail
+            partial so that rows are colored red or green. '''
         if self.status == 0:
             return 'pending'
         elif self.status == 1:
@@ -162,6 +176,7 @@ class School(Location):
 
     @property
     def css_class(self):
+        ''' Returns a css class for map pin display. '''
         stat = self.status
         if stat > 0:
             return "bubble green"
@@ -172,6 +187,7 @@ class School(Location):
 
     @property
     def direction(self):
+        ''' Returns a config option for map pin dispay. '''
         return self.Direction.CENTER
 
     @property
@@ -191,9 +207,9 @@ class School(Location):
 
     @property
     def full_code(self):
+        ''' Returns school code as a string. '''
         code = self.code if self.code is not None else ""
-        sat_num = self.satellite_number if self.satellite_number is not None else ""
-        return "%s" % (str(code) + str(sat_num))
+        return "%s" % (str(code))
 
     def _contacts(self):
         return self.schoolcontact.all()
