@@ -16,6 +16,7 @@
             {% for k, v in province.items %}
                 <div id="{{ k.name }}">
                 <h3>{{ k }}</h3>
+                <h4 class="export"><a href="{% url export-province k.pk %}">Export to excel</a></h4>
                 {% for district in v %}
                     <p><a href="{% url view-district k.pk district.pk %}">{{ district }}</a></p>
                     <span id="{{ district.name }}" class="district">{{ district.status_for_spark }}</span>
@@ -29,6 +30,7 @@
             {% for k, v in district.items %}
                 <div id="{{ k.name }}">
                 <h3>{{ k }}</h3>
+                    <h4 class="export"><a href="{% url export-district k.pk %}">Export to excel</a></h4>
                     <table>
                         <thead>
                             <tr>

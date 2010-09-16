@@ -15,6 +15,13 @@
         background: #f99;
 }
 
+.export a{
+    font-size: 80%;
+    color: white;
+    background: #33A7D2;
+    float:right;
+}
+
 #legend {
     border: 1px solid red;
     margin-top: 1em;

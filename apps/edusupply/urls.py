@@ -12,4 +12,9 @@ urlpatterns = patterns('',
         views.detail,
         name="view-district"),
 
+    url(r'^export/province/(?P<province_pk>\d+)$', views.csv_export,
+        name="export-province"),
+    url(r'^export/district/(?P<district_pk>\d+)$',
+        views.csv_export,
+        name="export-district"),
 )
