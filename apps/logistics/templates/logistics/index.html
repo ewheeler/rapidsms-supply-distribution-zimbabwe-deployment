@@ -14,9 +14,7 @@
             <th>Destination code</th>
             <th>Destination contact</th>
             <th>Destination contact phone</th>
-            <th>Destination contact alternate phone</th>
             <th>Status</th>
-            <th>Shipped</th>
             <th>Delivered</th>
             <th>Reported by</th>
             <th>Cargo</th>
@@ -32,9 +30,7 @@
                 <td>{{ship.destination.location.full_code}}</td>
                 <td>{{ship.destination.location.contact}}</td>
                 <td>{{ship.destination.location.contact_phone}}</td>
-                <td>{{ship.destination.location.contact_alt_phone}}</td>
                 <td>{{ship.get_status_display}}</td>
-                <td>{{ship.shipping_time|date:"d-M-Y H:m:s"}}</td>
                 <td>{{ship.actual_delivery_time|date:"d-M-Y H:m:s"}}</td>
                 <td>{{ship.delivery_sighting.seen_by}}</td>
                 <td>{{ship.delivery_sighting.observed_cargo}}</td>
