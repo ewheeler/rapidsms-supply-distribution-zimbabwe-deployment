@@ -208,20 +208,16 @@ def import_csv(args):
                         district.save()
 
                     def clean_and_convert_dm(raw_str):
-                        str = only_digits(raw_str)
+                        str = raw_str
                         if str in ['0', ' ', '']:
                             return None
-                        #whitespace = re.compile("(\s+)")
-                        #clean_str = re.sub(whitespace, " ", str)
+                        whitespace = re.compile("(\s+)")
+                        clean_str = re.sub(whitespace, " ", str)
 
                         # split degree and minute.decimal, remove minute mark (')
-                        #clean_dm = [x.strip('\'') for x in clean_str.split()]
+                        clean_dm = [x.strip('\'') for x in clean_str.split()]
                         # convert degree minute.decimal to degree.decimal
-                        #clean_dd = dd.dm2decimal(*clean_dm)
-                        degree = str[:2]
-                        minute = str[2:4]
-                        min_dec = minute + '.' + str[4:]
-                        clean_dd = dd.dm2decimal(minute, min_dec)
+                        clean_dd = dd.dm2decimal(*clean_dm)
                         return clean_dd 
 
                     if has_data(row, ['GPS_south', 'GPS_east']):
