@@ -36,7 +36,9 @@ class District(Location):
     slug = models.CharField(max_length=100, blank=True, null=True)
     code = models.PositiveIntegerField(max_length=20, blank=True, null=True)
 
-    status = models.TextField(blank=True, null=True)
+    # TODO this is silly. maybe district.status should contain
+    # a pickled list object instead of just text?
+    status = models.CharField(max_length=500, blank=True, null=True)
 
     def __unicode__(self):
         return self.name
@@ -62,7 +64,24 @@ class District(Location):
     def status_for_spark(self):
         ''' Returns self.status sans brackets. Otherwise the first
             and last ticks of the sparkline will always display 0. '''
+        # TODO this is silly. maybe district.status should contain
+        # a pickled list object instead of just text?
         return str(self.status).strip('[]')
+
+    @property
+    def status_as_list(self):
+        ''' Returns self.status as a list of strings
+            instead of a string. '''
+        # TODO this is silly. maybe district.status should contain
+        # a pickled list object instead of just text?
+
+        # d.status returns a unicode string :(
+        # so strip the brackets and split on commas to
+        # transform it into a list of unicode items
+        as_list = self.status.strip('[]').split(',')
+        # strip any leading whitespace from each list element,
+        # cast as strings, and add to the aggregate list
+        return [str(i.strip()) for i in as_list]
 
     @property
     def spark(self):

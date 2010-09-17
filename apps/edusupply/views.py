@@ -37,8 +37,45 @@ def district_dict(district_pk):
 def detail(req, province_pk, district_pk=None):
     if district_pk is not None:
         dict = district_dict(district_pk)
+        district = get_object_or_404(District, pk=district_pk)
+        status_list = district.status_as_list
     else:
         dict = province_dict(province_pk)
+        province = get_object_or_404(Province, pk=province_pk)
+        districts = District.objects.filter(parent_type=ContentType.objects.get(name="province"),\
+            parent_id=province.pk)
+        prov_stats = list()
+        for d in districts:
+            prov_stats.extend(d.status_as_list)
+        status_list = prov_stats
+
+    stats =  [
+        {
+            "caption": "Total schools",
+            "value":   len(status_list)
+        },
+        {
+            "caption": "Total pending shipments",
+            "value":   status_list.count('0')
+        },
+        {
+            "caption": "Total good condition",
+            "value":   status_list.count('1')
+        },
+        {
+            "caption": "Total damaged condition",
+            "value":   status_list.count('-2')
+        },
+        {
+            "caption": "Total delivered to alternate location",
+            "value":   status_list.count('-3')
+        },
+        {
+            "caption": "Total with incomplete cargo",
+            "value":   status_list.count('-4')
+        }
+    ]
+    dict.update({'stats':stats})
     return render_to_response("edusupply/details.html", dict,\
         context_instance=RequestContext(req))
 
