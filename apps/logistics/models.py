@@ -59,7 +59,7 @@ class CommodityBase(models.Model):
             and True or False otherwise. '''
         if self.aliases is not None:
             alias_list = self.alias_list()
-            if term in alias_list:
+            if term.lower() in alias_list:
                 return True
             else:
                 return False
