@@ -121,10 +121,14 @@ def go():
     ok_words = school_name_words_no_punc + other_words
 
     print len(unique)
+    counter = 0
     matches = 0
     #for text in ['CONFIRM BOOKS DADATA PRIMARY 1196i']:
     #for msg in unique[45:55]:
     for msg in unique:
+        counter = counter + 1
+        if counter % 100 == 0:
+            print "loop: %s" % str(counter)
         text = msg.text
         text_list = []
 
@@ -181,6 +185,7 @@ def go():
         # generator to yield relevant items in reverse order
         consume = consume_in_reverse(relevant)
         condition = None
+        school = None
         school_by_code = None
         school_by_spelling = None
         try:
@@ -217,19 +222,27 @@ def go():
                 else:
                     return attempt_consumption_of_condition_and_code(condition, school_by_code)
 
+            # recursively consume tokens until we have something for condition and school_by_code
             condition, school_by_code = attempt_consumption_of_condition_and_code(condition, school_by_code)
-            
-            # pop the next-to-next-to-last token
-            token = consume.next()
 
-            # now lets try to get the school name
-            if token in consumed:
-                token = consume.next()
-
-            school_name = token
-            consumed.append(token)
+            if not isinstance(school_by_code, list):
+                # woo! we have a condition and a single school, this is probably
+                # enough to be sure about the school, so save it as school before
+                # exploding into finding the school name
+                school = school_by_code
 
             try:
+                school_name = None
+                # pop the next-to-next-to-last token
+                token = consume.next()
+
+                # now lets try to get the school name
+                if token in consumed:
+                    token = consume.next()
+
+                school_name = token
+                consumed.append(token)
+
                 # consume up to five additional tokens and
                 # prepend to school_name
                 token = consume.next()
@@ -264,13 +277,11 @@ def go():
                     unconsumed.append(token)
 
             except StopIteration:
-                school_by_spelling = reconcile_school_by_spelling(school_name.strip())
+                if school_name is not None:
+                    school_by_spelling = reconcile_school_by_spelling(school_name.strip())
 
-                school = None
                 p_schools = []
-                if not isinstance(school_by_code, list):
-                    school = school_by_code
-                else:
+                if isinstance(school_by_code, list):
                     for s in (t[1] for t in school_by_code):
                         if s not in p_schools:
                             p_schools.append(s)
@@ -321,11 +332,14 @@ def go():
                 if school is not None:
                     if condition is not None:
                         matches = matches + 1
+                        if matches % 20 == 0:
+                            print "MATCHES: %s" % str(matches)
 
         except StopIteration:
             continue
         except Exception, e:
             print e
+            print counter
             print matches
             import ipdb;ipdb.set_trace()
-    print(matches)
+    print "MATCHES: %s" % str(matches)
