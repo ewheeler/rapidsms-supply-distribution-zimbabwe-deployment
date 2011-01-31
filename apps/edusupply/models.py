@@ -4,6 +4,7 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from rapidsms.contrib.locations.models import Location
+from rapidsms.contrib.messagelog.models import Message
 import utils
 from logistics.models import Facility
 from logistics.models import Cargo
@@ -314,3 +315,19 @@ class School(Location):
                 args_dists[2]))
 
         return utils.closest_matches(d, n)
+
+class Confirmation(models.Model):
+    CONDITION_CHOICES = (
+        ('G', 'Good'),
+        ('D', 'Damaged'),
+        ('L', 'Alternate delivery location'),
+        ('I', 'Incomplete'),
+    )
+    valid = models.BooleanField(default=False)
+    corrected = models.NullBooleanField(blank=True, null=True)
+    duplicate = models.NullBooleanField(blank=True, null=True)
+    replied_to = models.DateTimeField(blank=True, null=True)
+    message = models.ForeignKey(Message)
+    school = models.ForeignKey(School, blank=True, null=True)
+    condition = models.CharField(max_length=3, choices=CONDITION_CHOICES, blank=True, null=True)
+    token_list = models.CharField(max_length=500, blank=True, null=True)

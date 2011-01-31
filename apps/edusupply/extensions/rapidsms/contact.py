@@ -5,8 +5,8 @@ import operator
 import datetime
 
 from django.db import models
-from edusupply.models import School
-from edusupply.models import District
+#from edusupply.models import School
+#from edusupply.models import District
 
 import utils
 
@@ -17,8 +17,8 @@ from jarow import jarow
 class HeadmasterOrDEO(models.Model):
     phone = models.CharField(max_length=160, blank=True, null=True)
     alternate_phone = models.CharField(max_length=160, blank=True, null=True)
-    schools = models.ManyToManyField(School, related_name='schoolcontact', blank=True, null=True)
-    districts = models.ManyToManyField(District, related_name='districtcontact', blank=True, null=True)
+ #   schools = models.ManyToManyField(School, related_name='schoolcontact', blank=True, null=True)
+ #   districts = models.ManyToManyField(District, related_name='districtcontact', blank=True, null=True)
 
     class Meta:
         abstract = True

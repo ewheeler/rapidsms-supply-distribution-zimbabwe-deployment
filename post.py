@@ -4,7 +4,10 @@
 import re
 import itertools
 import copy
+import datetime
 from exceptions import StopIteration
+
+from django.contrib.contenttypes.models import ContentType
 
 from rapidsms.models import Contact
 from rapidsms.contrib.messagelog.models import Message
@@ -13,6 +16,7 @@ from edusupply.models import School
 from edusupply.models import District 
 from edusupply.models import Province 
 from edusupply.models import Country 
+from edusupply.models import Confirmation
 
 from logistics.models import Facility
 from logistics.models import Campaign
@@ -93,6 +97,22 @@ def reconcile_school_by_spelling(token):
         return possible_by_name
 
 def go():
+    print datetime.datetime.now().isoformat()
+    clean_db = True
+    if clean_db:
+        schools = School.objects.all().update(status=0)
+        print "reset schools"
+        districts = District.objects.all().update(status=None)
+        print "reset districts"
+        shipments = Shipment.objects.all().update(status='P')
+        shipments = Shipment.objects.all().update(actual_delivery_time=None)
+        print "reset shipments"
+        sightings = ShipmentSighting.objects.all().delete()
+        print "deleted sightings"
+        routes = ShipmentRoute.objects.all().delete()
+        print "deleted routes"
+        cargos = Cargo.objects.all().delete()
+        print "deleted cargos"
     incoming = Message.objects.filter(direction='I')
     unique_text = []
     unique = []
@@ -176,7 +196,9 @@ def go():
                 relevant.append(word)
                 continue
         # attach list of relevant bits to message
-        msg.token_list = copy.copy(relevant)
+        confirmation = Confirmation(message=msg)
+        confirmation.token_list = copy.copy(relevant)
+        confirmation.save()
 
         # now try to make sense of these tokens
         consumed = []
@@ -230,6 +252,8 @@ def go():
                 # enough to be sure about the school, so save it as school before
                 # exploding into finding the school name
                 school = school_by_code
+                confirmation.school = school
+                confirmation.save()
 
             try:
                 school_name = None
@@ -331,9 +355,73 @@ def go():
 
                 if school is not None:
                     if condition is not None:
+                        confirmation.condition = condition
+                        confirmation.valid = True
+                        confirmation.save()
                         matches = matches + 1
                         if matches % 20 == 0:
-                            print "MATCHES: %s" % str(matches)
+                            print "MATCHES: %s out of %s" % (str(matches), str(counter))
+                            print datetime.datetime.now().isoformat()
+
+                        commodity = Commodity.objects.get(slug__istartswith="textbooks")
+                        facility, f_created = Facility.objects.get_or_create(location_id=school.pk,\
+                            location_type=ContentType.objects.get(model='school'))
+                        if facility is not None:
+                            active_shipment = Facility.get_active_shipment(facility)
+                            observed_cargo = Cargo.objects.create(\
+                                commodity=commodity,\
+                                condition=condition)
+
+                            seen_by_str = msg.connection.backend.name + ":" + msg.connection.identity
+                            # create a new ShipmentSighting
+                            sighting = ShipmentSighting.objects.create(\
+                                observed_cargo=observed_cargo,\
+                                facility=facility, seen_by=seen_by_str)
+
+                            # associate new Cargo with Shipment
+                            active_shipment.status = 'D'
+                            active_shipment.actual_delivery_time=msg.date
+                            active_shipment.cargos.add(observed_cargo)
+                            active_shipment.save()
+
+                            # get or create a ShipmentRoute and associate
+                            # with new ShipmentSighting
+                            route, new_route = ShipmentRoute.objects.get_or_create(\
+                                shipment=active_shipment)
+                            route.sightings.add(sighting)
+                            route.save()
+                            if observed_cargo.condition is not None:
+                                this_school = School.objects.get(pk=facility.location_id)
+                                # map reported condition to the status numbers
+                                # that the sparklines will use
+                                map = {'G':1, 'D':-2, 'L':-3, 'I':-4}
+                                if observed_cargo.condition in ['D', 'L', 'I', 'G']:
+                                    this_school.status = map[observed_cargo.condition]
+                                else:
+                                    this_school.status = 0
+                                this_school.save()
+                                this_district = this_school.parent
+                                # TODO optimize! this is very expensive
+                                # and way too slow
+                                # re-generate the list of statuses that
+                                # the sparklines will use
+                                #updated = this_district.spark
+
+                            campaign = Campaign.get_active_campaign()
+                            if campaign is not None:
+                                campaign.shipments.add(active_shipment)
+                                campaign.save()
+
+                        '''
+                        data = [
+                                "of %s"             % (commodity.slug or "??"),
+                                "to %s"             % (facility.location.name or "??"),
+                                "in %s condition"   % (observed_cargo.get_condition_display() or "??")
+                        ]
+                        confirmation = "Thanks. Confirmed delivery of %s." %\
+                            (" ".join(data))
+                        print seen_by_str + " " + confirmation
+                        '''
 
         except StopIteration:
             continue
@@ -343,3 +431,19 @@ def go():
             print matches
             import ipdb;ipdb.set_trace()
     print "MATCHES: %s" % str(matches)
+    districts = District.objects.all()
+    print "%s districts" % str(districts.count())
+    for d in districts:
+        print "updating sparks for '%s'" % d.name
+        d.spark
+
+'''
+1587 total incoming messages
+    746 unique phone numbers
+
+1046 unique incoming messages (541 duplicates 34%)
+    757 parsed successfully
+        47.7% of total (1587)
+        72.4% of uniques (1046)
+        363 unique schools
+'''
