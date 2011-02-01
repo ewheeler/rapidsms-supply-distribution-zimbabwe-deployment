@@ -107,6 +107,8 @@ def go():
         shipments = Shipment.objects.all().update(status='P')
         shipments = Shipment.objects.all().update(actual_delivery_time=None)
         print "reset shipments"
+        confirmations = Confirmation.objects.all().delete()
+        print "deleted confirmations"
         sightings = ShipmentSighting.objects.all().delete()
         print "deleted sightings"
         routes = ShipmentRoute.objects.all().delete()
