@@ -235,6 +235,8 @@ def go():
                     school_by_code = reconcile_school_by_code(token)
                     if school_by_code is not None:
                         consumed.append(token)
+                        confirmation.code = token
+                        confirmation.save()
                     else:
                         if token not in unconsumed:
                             unconsumed.append(token)
@@ -446,4 +448,11 @@ def go():
         47.7% of total (1587)
         72.4% of uniques (1046)
         363 unique schools
+
+We Maereka P.school are thanking you forUNICEF tx bks but we didnt receive any for Gd 3.
+Kubatana primary under Mazowe district didnt receive textbook we dont know why we a trying to cal yr office bt no answer may u pliz help us
+My unicef textbooks were left 58km away. Why? Who should foot the bill now? M. Nyathi (Buda primary)
+Confirm books GWANGWALIBA PRIMARY SCHOOL- (G). Thank you!
+HLATSHWAYO SCHOOL THANKS U 4 DONATION OF TXBOOKS.OUR SCHOOL CODE II36, NUMBER OFBKS I64O,GOOD CONDITION
+
 '''

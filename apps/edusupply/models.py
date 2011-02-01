@@ -329,5 +329,6 @@ class Confirmation(models.Model):
     replied_to = models.DateTimeField(blank=True, null=True)
     message = models.ForeignKey(Message)
     school = models.ForeignKey(School, blank=True, null=True)
+    code = models.CharField(max_length=8, blank=True, null=True)
     condition = models.CharField(max_length=3, choices=CONDITION_CHOICES, blank=True, null=True)
     token_list = models.CharField(max_length=500, blank=True, null=True)
