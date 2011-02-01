@@ -13,10 +13,15 @@ from django.contrib.contenttypes.models import ContentType
 from .models import Province
 from .models import District
 from .models import School
+from .models import Confirmation
 
 def index(req):
     return render_to_response("edusupply/index.html",\
         context_instance=RequestContext(req))
+
+def invalids(req):
+    return render_to_response("edusupply/invalid.html",\
+        {"invalid_confs": Confirmation.objects.filter(valid=False)}, context_instance=RequestContext(req))
 
 def province_dict(province_pk):
     ''' Return a dict with key 'province' and the value is a dict

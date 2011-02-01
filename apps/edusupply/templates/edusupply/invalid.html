@@ -1,0 +1,34 @@
+{% extends "layout-split-2.html" %}
+{% block title %}Shipment Reports{% endblock %}
+{% block content %}
+
+<div class="module">
+
+<table width="100%">
+    <thead>
+        <tr>
+            <th>Sender</th>
+            <th>Original text</th>
+            <th>School (parsed from msg)</th>
+            <th>Condition (parsed from msg)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in invalid_confs %}
+            <tr>
+                <td>{{c.message.connection.identity }}</td>
+                <td>{{c.message.text}}</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>{{c.token_list}}</td>
+                <td>{{c.school}}</td>
+                <td>{{c.condition}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
