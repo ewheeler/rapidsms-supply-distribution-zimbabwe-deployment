@@ -357,6 +357,12 @@ def go():
                                 else:
                                     school = s
 
+                if school is None:
+                    confirmation.possible_schools = [s.pk for s in p_schools]
+                    confirmation.save()
+                    if condition is not None:
+                        confirmation.condition = condition
+                        confirmation.save()
                 if school is not None:
                     if condition is not None:
                         confirmation.condition = condition

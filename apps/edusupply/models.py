@@ -329,6 +329,17 @@ class Confirmation(models.Model):
     replied_to = models.DateTimeField(blank=True, null=True)
     message = models.ForeignKey(Message)
     school = models.ForeignKey(School, blank=True, null=True)
+    possible_schools = models.CharField(max_length=500, blank=True, null=True)
     code = models.CharField(max_length=8, blank=True, null=True)
     condition = models.CharField(max_length=3, choices=CONDITION_CHOICES, blank=True, null=True)
     token_list = models.CharField(max_length=500, blank=True, null=True)
+
+    @property
+    def get_possible_schools(self):
+        p_schools = []
+        if self.possible_schools is not None:
+            for ps in self.possible_schools:
+                s = School.objects.get(pk=ps)
+                if s is not None:
+                    p_schools.append(s)
+        return p_schools
