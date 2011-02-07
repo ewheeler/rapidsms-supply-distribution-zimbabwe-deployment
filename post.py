@@ -464,3 +464,22 @@ Confirm books GWANGWALIBA PRIMARY SCHOOL- (G). Thank you!
 HLATSHWAYO SCHOOL THANKS U 4 DONATION OF TXBOOKS.OUR SCHOOL CODE II36, NUMBER OFBKS I64O,GOOD CONDITION
 
 '''
+
+def stats():
+    map = {'1':'good', '-2':'damaged', '-3': 'alternate location', '-4':'incomplete', '0':'unknown'}
+    for province in Province.objects.all():
+        prov_stats = {'good' : 0,'damaged' : 0,'alternate location': 0,'incomplete' : 0,'unknown' : 0}
+#        print province.name + ' districts:'
+        for district in District.objects.all():
+            if district.parent.name == province.name:
+#                print district.name
+                status_list = district.status_as_list
+                for n in ['-4', '-3', '-2', '1', '0']:
+                    stat_count = status_list.count(n)
+#                    print str(stat_count) + ' ' + map[n]
+                    parent_count = prov_stats[map[n]]
+                    prov_stats[map[n]] = parent_count + int(stat_count)
+        print province.name + ' totals:'
+        for k,v in prov_stats.iteritems():
+            print str(v) + ' ' + k
+        print ' '
